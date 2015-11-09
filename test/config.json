@@ -1,0 +1,10 @@
+{
+  "my": {
+    "special": {
+      "config": true
+    }
+  },
+  "amqp": {
+    "ssl": false
+  }
+}
