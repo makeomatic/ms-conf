@@ -46,8 +46,20 @@ if (process.env.hasOwnProperty('NCONF_FILE_PATH')) {
   // as is after it was already camelCased and merged
   //
   // nconf.file(process.env.NCONF_FILE_PATH);
-  //
-  ld.merge(configuration, require(process.env.NCONF_FILE_PATH));
+
+  let files;
+  try {
+    files = JSON.parse(process.env.NCONF_FILE_PATH);
+    if (!Array.isArray(files)) {
+      throw new Error('NCONF_FILE_PATH must be a stringified array or a string');
+    }
+  } catch (e) {
+    files = [ process.env.NCONF_FILE_PATH ];
+  }
+
+  files.forEach(function mergeConfiguration(file) {
+    ld.merge(configuration, require(file));
+  });
 }
 
 module.exports = configuration;
