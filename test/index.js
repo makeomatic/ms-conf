@@ -1,50 +1,50 @@
-const chai = require('chai');
-const { expect } = chai;
+const assert = require('assert');
+const env = process.env;
 
 describe('Configuration loader', function suite() {
-  process.env.DOTENV_FILE_PATH = __dirname + '/.env';
-  process.env.NCONF_FILE_PATH = __dirname + '/config.json';
+  env.DOTENV_FILE_PATH = `${__dirname}/.env`;
+  env.NCONF_FILE_PATH = `${__dirname}/config.json`;
 
   it('should load configuration', function confInit() {
     this.mod = require('../src');
   });
 
   it('should correctly use match env option', function envChecker() {
-    expect(Object.keys(this.mod)).to.have.length.of(5);
-    expect(this.mod).to.have.ownProperty('amqp');
-    expect(this.mod).to.have.ownProperty('value');
-    expect(this.mod).to.have.ownProperty('expanded');
+    assert.equal(Object.keys(this.mod).length, 5);
+    assert.ok(this.mod.amqp);
+    assert.ok(this.mod.value);
+    assert.ok(this.mod.expanded);
   });
 
   it('correctly omits options', function envChecker() {
-    expect(this.mod).to.not.have.ownProperty('omit');
-    expect(this.mod).to.have.ownProperty('whitelist');
+    assert.ifError(this.mod.omit);
+    assert.ok(this.mod.whitelist);
   });
 
-  it('correctly expands values', function envChecker() {
-    expect(this.mod.expanded).to.be.eq(this.mod.value);
-    expect(this.mod.value).to.be.eq('darn');
+  it('does not expand values', function envChecker() {
+    assert.equal(this.mod.expanded, '$MS_CONF___VALUE');
+    assert.equal(this.mod.value, 'darn');
   });
 
   it('parses correct json and returns original text if it is not', function envChecker() {
-    expect(this.mod.amqp.hosts).to.be.deep.eq([ '127.0.0.1' ]);
-    expect(this.mod.amqp.invalidJson).to.be.eq('{"test":bad}');
+    assert.deepEqual(this.mod.amqp.hosts, ['127.0.0.1']);
+    assert.equal(this.mod.amqp.invalidJson, '{"test":bad}');
   });
 
   it('file was loaded and configuration was merged', function fileChecker() {
-    expect(this.mod).to.have.ownProperty('my');
-    expect(this.mod.amqp.ssl).to.be.eq(false);
+    assert.ok(this.mod.my);
+    assert.equal(this.mod.amqp.ssl, false);
   });
 
   it('produces correct configuration', function confChecker() {
-    expect(this.mod).to.be.deep.eq({
+    assert.deepEqual(this.mod, {
       amqp: {
-        hosts: [ '127.0.0.1' ],
+        hosts: ['127.0.0.1'],
         ssl: false,
         stringTrue: 'true',
         invalidJson: '{"test":bad}',
       },
-      expanded: 'darn',
+      expanded: '$MS_CONF___VALUE',
       value: 'darn',
       whitelist: true,
       my: {

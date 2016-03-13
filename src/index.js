@@ -1,26 +1,28 @@
 const camelCase = require('camelcase');
 const nconf = require('nconf');
 const dotenv = require('dotenv');
-const ld = require('lodash');
+const reduce = require('lodash.reduce');
+const merge = require('lodash.merge');
+const assert = require('assert');
+const env = process.env;
+const silent = env.hasOwnProperty('DOTENV_NOT_SILENT') ? false : true;
 
 // load dotenv
 dotenv.config({
-  silent: process.env.hasOwnProperty('DOTENV_NOT_SILENT') ? false : true,
-  encoding: process.env.DOTENV_ENCODING || 'utf-8',
-  path: process.env.DOTENV_FILE_PATH || process.cwd() + '/.env',
+  silent,
+  encoding: env.DOTENV_ENCODING || 'utf-8',
+  path: env.DOTENV_FILE_PATH || process.cwd() + '/.env',
 });
 
 nconf.use('memory');
 nconf.argv();
 nconf.env({
-  separator: process.env.NCONF_SEPARATOR || '__',
-  match: process.env.hasOwnProperty('NCONF_MATCH') ? new RegExp(process.env.NCONF_MATCH, process.env.NCONF_MATCH_OPTS) : null,
-  whitelist: process.env.hasOwnProperty('NCONF_WHITELIST') ? JSON.parse(process.env.NCONF_WHITELIST) : null,
+  separator: env.NCONF_SEPARATOR || '__',
+  match: env.hasOwnProperty('NCONF_MATCH') ? new RegExp(env.NCONF_MATCH, env.NCONF_MATCH_OPTS) : null,
+  whitelist: env.hasOwnProperty('NCONF_WHITELIST') ? JSON.parse(env.NCONF_WHITELIST) : null,
 });
 
-if (!process.env.NCONF_NAMESPACE) {
-  throw new Error('NCONF_NAMESPACE must be present in order to parse your configuration');
-}
+assert.ok(env.NCONF_NAMESPACE, 'NCONF_NAMESPACE must be present in order to parse your configuration');
 
 function parseJSONSafe(possibleJSON) {
   try {
@@ -30,35 +32,48 @@ function parseJSONSafe(possibleJSON) {
   }
 }
 
-const configuration = {};
-ld.forOwn(nconf.get(process.env.NCONF_NAMESPACE), function camelCaseKeys(value, key) {
-  const camelized = process.env.hasOwnProperty('NCONF_NO_CAMELCASE') ? key : camelCase(key);
-  if (value && typeof value === 'object') {
-    ld.forOwn(value, camelCaseKeys, (this[camelized] = {}));
-  } else {
-    this[camelized] = parseJSONSafe(value);
-  }
-}, configuration);
+const camelize = env.hasOwnProperty('NCONF_NO_CAMELCASE');
+function camelCaseKeys(obj, value, key) {
+  const camelized = camelize ? key : camelCase(key);
 
-if (process.env.hasOwnProperty('NCONF_FILE_PATH')) {
+  if (value && typeof value === 'object') {
+    reduce(value, camelCaseKeys, (obj[camelized] = {}));
+  } else {
+    obj[camelized] = parseJSONSafe(value);
+  }
+
+  return obj;
+}
+
+const namespace = nconf.get(env.NCONF_NAMESPACE);
+const configuration = reduce(namespace, camelCaseKeys, {});
+
+if (env.hasOwnProperty('NCONF_FILE_PATH')) {
   // nconf file does not merge configuration, it will either omit it
   // or overwrite it, since it's JSON and is already parsed, what we will do is pass it into configuration
   // as is after it was already camelCased and merged
   //
-  // nconf.file(process.env.NCONF_FILE_PATH);
+  // nconf.file(env.NCONF_FILE_PATH);
 
   let files;
   try {
-    files = JSON.parse(process.env.NCONF_FILE_PATH);
+    files = JSON.parse(env.NCONF_FILE_PATH);
     if (!Array.isArray(files)) {
       throw new Error('NCONF_FILE_PATH must be a stringified array or a string');
     }
   } catch (e) {
-    files = [ process.env.NCONF_FILE_PATH ];
+    files = [env.NCONF_FILE_PATH];
   }
 
   files.forEach(function mergeConfiguration(file) {
-    ld.merge(configuration, require(file));
+    try {
+      merge(configuration, require(file));
+    } catch (e) {
+      // file might not be present, if we are not in silent mode - print warn
+      if (!silent) {
+        process.stderr.write(`Failed to include file ${file}, err: ${e.message}\n`);
+      }
+    }
   });
 }
 

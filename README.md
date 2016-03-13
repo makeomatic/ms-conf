@@ -5,7 +5,7 @@ Each value is JSON parsed first if it is possible, therefore you can pass arrays
 
 ## Installation
 
-`npm i ms-amqp-conf -S`
+`npm i ms-conf -S`
 
 ## Configuration
 
@@ -40,7 +40,7 @@ const config = require('ms-amqp-conf');
 // config would equal
 // {
 //   amqp: {
-//     hosts: [ '127.0.0.1' ],
+//     hosts: ['127.0.0.1'],
 //     ssl: true,
 //     stringTrue: 'true'
 //   }
