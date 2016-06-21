@@ -33,6 +33,7 @@ NCONF_MATCH_OPTS=i
 MS_CONF__AMQP__HOSTS=["127.0.0.1"]
 MS_CONF__AMQP__SSL=true
 MS_CONF__AMQP__STRING_TRUE='"true"'
+NCONF_FILE_PATH=["/etc/app-configs","/etc/nice-config.js","/opt/app/bundle.json"]
 ```
 
 ```js

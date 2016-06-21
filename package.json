@@ -1,6 +1,6 @@
 {
   "name": "ms-conf",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "wrapper over dotenv and nconf module for one line configuration loading",
   "main": "./lib/index.js",
   "scripts": {
@@ -26,21 +26,22 @@
   },
   "homepage": "https://github.com/makeomatic/ms-conf#readme",
   "devDependencies": {
-    "babel-cli": "^6.4.5",
-    "babel-eslint": "^5.0.0",
-    "babel-preset-es2015": "^6.3.13",
-    "babel-preset-stage-0": "^6.3.13",
-    "babel-register": "^6.4.3",
-    "eslint": "^2.4.0",
-    "eslint-config-airbnb": "^6.0.1",
-    "eslint-plugin-mocha": "^2.0.0",
-    "mocha": "^2.3.3"
+    "babel-cli": "^6.10.1",
+    "babel-eslint": "^6.0.5",
+    "babel-plugin-transform-strict-mode": "^6.8.0",
+    "babel-register": "^6.9.0",
+    "eslint": "^2.13.1",
+    "eslint-config-airbnb-base": "^3.0.1",
+    "eslint-plugin-import": "^1.9.2",
+    "eslint-plugin-mocha": "^3.0.0",
+    "mocha": "^2.5.3"
   },
   "dependencies": {
-    "camelcase": "^2.1.1",
+    "camelcase": "^3.0.0",
     "dotenv": "^2.0.0",
-    "lodash.merge": "^4.3.2",
-    "lodash.reduce": "^4.2.0",
-    "nconf": "^0.8.2"
+    "glob": "^7.0.5",
+    "lodash.merge": "^4.4.0",
+    "lodash.reduce": "^4.4.0",
+    "nconf": "^0.8.4"
   }
 }

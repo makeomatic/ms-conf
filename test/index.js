@@ -3,14 +3,17 @@ const env = process.env;
 
 describe('Configuration loader', function suite() {
   env.DOTENV_FILE_PATH = `${__dirname}/.env`;
-  env.NCONF_FILE_PATH = `${__dirname}/config.json`;
+  env.NCONF_FILE_PATH = JSON.stringify([
+    `${__dirname}/config.json`,
+    `${__dirname}/dir`,
+  ]);
 
   it('should load configuration', function confInit() {
     this.mod = require('../src');
   });
 
   it('should correctly use match env option', function envChecker() {
-    assert.equal(Object.keys(this.mod).length, 5);
+    assert.equal(Object.keys(this.mod).length, 7);
     assert.ok(this.mod.amqp);
     assert.ok(this.mod.value);
     assert.ok(this.mod.expanded);
@@ -52,6 +55,10 @@ describe('Configuration loader', function suite() {
           config: true,
         },
       },
+      agri: {
+        culture: true,
+      },
+      pot: 'is-json',
     });
   });
 });

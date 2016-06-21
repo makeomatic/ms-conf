@@ -1,9 +1,10 @@
 {
-  "extends": "airbnb/base",
+  "extends": "airbnb-base",
   "plugins": [
     "mocha"
   ],
-  "env": {
-    "mocha": true
+  "rules": {
+    "no-param-reassign": [2, {"props": false}],
+    "max-len": [2, 120]
   }
 }
