@@ -1,91 +1,44 @@
-const camelCase = require('camelcase');
-const nconf = require('nconf');
-const dotenv = require('dotenv');
-const reduce = require('lodash.reduce');
-const merge = require('lodash.merge');
-const assert = require('assert');
-const fs = require('fs');
-const env = process.env;
-const silent = env.hasOwnProperty('DOTENV_NOT_SILENT');
-const cwd = process.cwd();
-const glob = require('glob');
+const debug = require('debug')('ms-conf');
+const Confidence = require('confidence');
+const loadConfig = require('./load-config');
 
-// load dotenv
-dotenv.config({
-  silent,
-  encoding: env.DOTENV_ENCODING || 'utf-8',
-  path: env.DOTENV_FILE_PATH || `${cwd}/.env`,
-});
+// uses confidence API to access store
+let store;
 
-nconf.use('memory');
-nconf.argv();
-nconf.env({
-  separator: env.NCONF_SEPARATOR || '__',
-  match: env.hasOwnProperty('NCONF_MATCH') ? new RegExp(env.NCONF_MATCH, env.NCONF_MATCH_OPTS) : null,
-  whitelist: env.hasOwnProperty('NCONF_WHITELIST') ? JSON.parse(env.NCONF_WHITELIST) : null,
-});
-
-assert(env.NCONF_NAMESPACE, 'NCONF_NAMESPACE must be present in order to parse your configuration');
-
-function parseJSONSafe(possibleJSON) {
-  try {
-    return JSON.parse(possibleJSON);
-  } catch (e) {
-    return possibleJSON;
-  }
+// use this on sighup
+function reload() {
+  debug('reloading configuration');
+  store = new Confidence.Store(loadConfig());
 }
 
-const camelize = env.hasOwnProperty('NCONF_NO_CAMELCASE');
-function camelCaseKeys(obj, value, key) {
-  const camelized = camelize ? key : camelCase(key);
-
-  if (value && typeof value === 'object') {
-    reduce(value, camelCaseKeys, (obj[camelized] = {}));
-  } else {
-    obj[camelized] = parseJSONSafe(value);
-  }
-
-  return obj;
+// hot-reload enabler
+function enableReload() {
+  debug('enabling sighup');
+  process.on('SIGUSR1', reload);
 }
 
-const namespace = nconf.get(env.NCONF_NAMESPACE);
-const configuration = reduce(namespace, camelCaseKeys, {});
-
-function readFile(path) {
-  try {
-    merge(configuration, require(path)); // eslint-disable-line global-require
-  } catch (e) {
-    if (!silent) {
-      process.stderr.write(`Failed to include file ${path}, err: ${e.message}\n`);
-    }
-  }
+// hot-reload disabler
+function disableReload() {
+  debug('disabling sighup');
+  process.removeListener('SIGUSR1', reload);
 }
 
-if (env.hasOwnProperty('NCONF_FILE_PATH')) {
-  // nconf file does not merge configuration, it will either omit it
-  // or overwrite it, since it's JSON and is already parsed, what we will
-  // do is pass it into configuration as is after it was already camelCased and merged
-  //
-  // nconf.file(env.NCONF_FILE_PATH);
-
-  let files;
-  try {
-    files = JSON.parse(env.NCONF_FILE_PATH);
-    if (!Array.isArray(files)) {
-      throw new Error('NCONF_FILE_PATH must be a stringified array or a string');
-    }
-  } catch (e) {
-    files = [env.NCONF_FILE_PATH];
-  }
-
-  files.forEach(file => {
-    const stats = fs.statSync(file);
-    if (stats.isFile()) {
-      readFile(file);
-    } else if (stats.isDirectory()) {
-      glob.sync(`${file}/*.{js,json}`).forEach(readFile);
-    }
-  });
+function get(key, opts) {
+  return store.get(key, opts);
 }
 
-module.exports = configuration;
+function meta(key, opts) {
+  return store.meta(key, opts);
+}
+
+// load first configuration
+reload();
+
+// init first configuration
+module.exports = {
+  get,
+  meta,
+  reload,
+  enableReload,
+  disableReload,
+};

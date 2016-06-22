@@ -1,6 +1,6 @@
 # Configuration loading module
 
-Combines dotenv, nconf and processes env configuration into camelcase;
+Combines confidence, dotenv, nconf and processes env configuration into camelcase;
 Each value is JSON parsed first if it is possible, therefore you can pass arrays/objects and boolean params through env
 
 ## Installation
@@ -37,7 +37,8 @@ NCONF_FILE_PATH=["/etc/app-configs","/etc/nice-config.js","/opt/app/bundle.json"
 ```
 
 ```js
-const config = require('ms-amqp-conf');
+const confidence = require('ms-conf');
+const config = confidence.get('/');
 // config would equal
 // {
 //   amqp: {
@@ -46,6 +47,16 @@ const config = require('ms-amqp-conf');
 //     stringTrue: 'true'
 //   }
 // }
+```
+
+## Hot Reload
+
+```js
+confidence.enableReload();
+// now SIGHUP signal to process would reload configuration
+
+confidence.disableReload();
+// wont listen for SIGUSR1 events any longer
 ```
 
 For a more detailed example - see tests

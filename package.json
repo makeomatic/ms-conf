@@ -1,6 +1,6 @@
 {
   "name": "ms-conf",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "wrapper over dotenv and nconf module for one line configuration loading",
   "main": "./lib/index.js",
   "scripts": {
@@ -30,6 +30,7 @@
     "babel-eslint": "^6.0.5",
     "babel-plugin-transform-strict-mode": "^6.8.0",
     "babel-register": "^6.9.0",
+    "bluebird": "^3.4.1",
     "eslint": "^2.13.1",
     "eslint-config-airbnb-base": "^3.0.1",
     "eslint-plugin-import": "^1.9.2",
@@ -38,6 +39,8 @@
   },
   "dependencies": {
     "camelcase": "^3.0.0",
+    "confidence": "^3.0.1",
+    "debug": "^2.2.0",
     "dotenv": "^2.0.0",
     "glob": "^7.0.5",
     "lodash.merge": "^4.4.0",
