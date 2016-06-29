@@ -1,6 +1,6 @@
 {
   "name": "ms-conf",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "wrapper over dotenv and nconf module for one line configuration loading",
   "main": "./lib/index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   "homepage": "https://github.com/makeomatic/ms-conf#readme",
   "devDependencies": {
     "babel-cli": "^6.10.1",
-    "babel-eslint": "^6.0.5",
+    "babel-eslint": "^6.1.0",
     "babel-plugin-transform-strict-mode": "^6.8.0",
     "babel-register": "^6.9.0",
     "bluebird": "^3.4.1",

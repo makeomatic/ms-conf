@@ -59,4 +59,13 @@ confidence.disableReload();
 // wont listen for SIGUSR1 events any longer
 ```
 
+## Utilities
+
+1. Load file pathd
+
+```js
+const { globFiles } = require('ms-conf/load-config');
+const config = globFiles(['/path/to/configs', '/path/to/config/direct.js', '/path/to/conf.json']);
+```
+
 For a more detailed example - see tests
