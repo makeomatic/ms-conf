@@ -64,7 +64,7 @@ confidence.disableReload();
 1. Load file pathd
 
 ```js
-const { globFiles } = require('ms-conf/load-config');
+const { globFiles } = require('ms-conf/lib/load-config');
 const config = globFiles(['/path/to/configs', '/path/to/config/direct.js', '/path/to/conf.json']);
 ```
 
