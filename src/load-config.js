@@ -46,6 +46,31 @@ const readFile = configuration => path => {
   }
 };
 
+function globFiles(filePaths, configuration = {}) {
+  let files;
+  try {
+    files = JSON.parse(filePaths);
+    if (!Array.isArray(files)) {
+      throw new Error('NCONF_FILE_PATH must be a stringified array or a string');
+    }
+  } catch (e) {
+    files = [filePaths];
+  }
+
+  const mergeFile = readFile(configuration);
+
+  files.forEach(file => {
+    const stats = fs.statSync(file);
+    if (stats.isFile()) {
+      mergeFile(file);
+    } else if (stats.isDirectory()) {
+      glob.sync(`${file}/*.{js,json}`).forEach(mergeFile);
+    }
+  });
+
+  return configuration;
+}
+
 function loadConfiguration() {
   // load dotenv
   dotenv.config({
@@ -83,29 +108,11 @@ function loadConfiguration() {
     //
     // nconf.file(env.NCONF_FILE_PATH);
 
-    let files;
-    try {
-      files = JSON.parse(filePaths);
-      if (!Array.isArray(files)) {
-        throw new Error('NCONF_FILE_PATH must be a stringified array or a string');
-      }
-    } catch (e) {
-      files = [filePaths];
-    }
-
-    const mergeFile = readFile(configuration);
-
-    files.forEach(file => {
-      const stats = fs.statSync(file);
-      if (stats.isFile()) {
-        mergeFile(file);
-      } else if (stats.isDirectory()) {
-        glob.sync(`${file}/*.{js,json}`).forEach(mergeFile);
-      }
-    });
+    globFiles(filePaths, configuration);
   }
 
   return configuration;
 }
 
 module.exports = loadConfiguration;
+module.exports.globFiles = globFiles;
