@@ -42,7 +42,7 @@ const readFile = configuration => path => {
     debug('loading %s', absPath);
     merge(configuration, require(absPath)); // eslint-disable-line global-require
   } catch (e) {
-    debug(`Failed to include file ${path}, err: ${e.message}\n`);
+    process.stderr.write(`Failed to include file ${path}, err: ${e.message}\n`);
   }
 };
 
