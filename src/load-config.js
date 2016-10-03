@@ -4,9 +4,11 @@ const nconf = require('nconf');
 const dotenv = require('dotenv');
 const reduce = require('lodash.reduce');
 const merge = require('lodash.merge');
+const uniq = require('lodash.uniq');
 const assert = require('assert');
 const fs = require('fs');
 const glob = require('glob');
+const path = require('path');
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 const env = process.env;
@@ -37,16 +39,17 @@ const camelCaseKeys = camelize => function processKeys(obj, value, key) {
 };
 
 // read file from path and try to parse it
-const readFile = configuration => (path) => {
+const readFile = configuration => (absPath) => {
+  assert(path.isAbsolute(absPath), `${absPath} must be an absolute path`);
+
   try {
     // delete loaded file
-    const absPath = require.resolve(path);
     delete require.cache[absPath];
     debug('loading %s', absPath);
     // eslint-disable-next-line global-require, import/no-dynamic-require
     merge(configuration, require(absPath));
   } catch (e) {
-    process.stderr.write(`Failed to include file ${path}, err: ${e.message}\n`);
+    process.stderr.write(`Failed to include file ${absPath}, err: ${e.message}\n`);
   }
 };
 
@@ -65,18 +68,39 @@ function possibleJSONStringToArray(filePaths) {
   return files;
 }
 
+function resolve(filePath) {
+  return require.resolve(filePath);
+}
+
+function resolveAbsPaths(paths) {
+  const absolutePaths = paths.reduce((resolvedPaths, filePath) => {
+    const stats = fs.statSync(filePath);
+    if (stats.isFile()) {
+      resolvedPaths.push(resolve(filePath));
+    } else if (stats.isDirectory()) {
+      // NOTE: can be improved
+      // this is an extra call, but we dont care since it's a one-time op
+      const absPaths = glob.sync(`${filePath}/*.{js,json}`).map(resolve);
+      resolvedPaths.push(...absPaths);
+    }
+
+    return resolvedPaths;
+  }, []);
+
+  return uniq(absolutePaths);
+}
+
 function globFiles(filePaths, configuration = {}) {
-  const files = possibleJSONStringToArray(filePaths);
+  // if we get parsed JSON array - use it right away
+  const files = isArray(filePaths)
+    ? filePaths
+    : possibleJSONStringToArray(filePaths);
+
+  // prepare merger
   const mergeFile = readFile(configuration);
 
-  files.forEach((file) => {
-    const stats = fs.statSync(file);
-    if (stats.isFile()) {
-      mergeFile(file);
-    } else if (stats.isDirectory()) {
-      glob.sync(`${file}/*.{js,json}`).forEach(mergeFile);
-    }
-  });
+  // resolve paths and merge
+  resolveAbsPaths(files).forEach(mergeFile);
 
   return configuration;
 }

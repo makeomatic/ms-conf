@@ -1,6 +1,6 @@
 {
   "name": "ms-conf",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "wrapper over dotenv and nconf module for one line configuration loading",
   "main": "./lib/index.js",
   "scripts": {
@@ -46,6 +46,7 @@
     "glob": "^7.1.0",
     "lodash.merge": "^4.6.0",
     "lodash.reduce": "^4.6.0",
+    "lodash.uniq": "^4.5.0",
     "nconf": "^0.8.4"
   }
 }
