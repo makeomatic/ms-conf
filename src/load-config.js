@@ -6,10 +6,13 @@ const reduce = require('lodash.reduce');
 const merge = require('lodash.merge');
 const assert = require('assert');
 const fs = require('fs');
-const env = process.env;
-const silent = env.hasOwnProperty('DOTENV_NOT_SILENT');
-const cwd = process.cwd();
 const glob = require('glob');
+
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+const env = process.env;
+const silent = hasOwnProperty.call(env, 'DOTENV_NOT_SILENT');
+const cwd = process.cwd();
+const isArray = Array.isArray;
 
 // safe json parse
 function parseJSONSafe(possibleJSON) {
@@ -34,32 +37,39 @@ const camelCaseKeys = camelize => function processKeys(obj, value, key) {
 };
 
 // read file from path and try to parse it
-const readFile = configuration => path => {
+const readFile = configuration => (path) => {
   try {
     // delete loaded file
     const absPath = require.resolve(path);
     delete require.cache[absPath];
     debug('loading %s', absPath);
-    merge(configuration, require(absPath)); // eslint-disable-line global-require
+    // eslint-disable-next-line global-require, import/no-dynamic-require
+    merge(configuration, require(absPath));
   } catch (e) {
     process.stderr.write(`Failed to include file ${path}, err: ${e.message}\n`);
   }
 };
 
-function globFiles(filePaths, configuration = {}) {
+function possibleJSONStringToArray(filePaths) {
   let files;
   try {
     files = JSON.parse(filePaths);
-    if (!Array.isArray(files)) {
-      throw new Error('NCONF_FILE_PATH must be a stringified array or a string');
-    }
   } catch (e) {
     files = [filePaths];
   }
 
+  if (!isArray(files)) {
+    throw new Error('NCONF_FILE_PATH must be a stringified array or a string');
+  }
+
+  return files;
+}
+
+function globFiles(filePaths, configuration = {}) {
+  const files = possibleJSONStringToArray(filePaths);
   const mergeFile = readFile(configuration);
 
-  files.forEach(file => {
+  files.forEach((file) => {
     const stats = fs.statSync(file);
     if (stats.isFile()) {
       mergeFile(file);
@@ -80,7 +90,7 @@ function loadConfiguration() {
   });
 
   // do we camelize?
-  const camelize = env.hasOwnProperty('NCONF_NO_CAMELCASE');
+  const camelize = hasOwnProperty.call(env, 'NCONF_NO_CAMELCASE');
   const namespaceKey = env.NCONF_NAMESPACE;
   const filePaths = env.NCONF_FILE_PATH;
 
@@ -93,8 +103,8 @@ function loadConfiguration() {
   nconf.argv();
   nconf.env({
     separator: env.NCONF_SEPARATOR || '__',
-    match: env.hasOwnProperty('NCONF_MATCH') ? new RegExp(env.NCONF_MATCH, env.NCONF_MATCH_OPTS) : null,
-    whitelist: env.hasOwnProperty('NCONF_WHITELIST') ? JSON.parse(env.NCONF_WHITELIST) : null,
+    match: hasOwnProperty.call(env, 'NCONF_MATCH') ? new RegExp(env.NCONF_MATCH, env.NCONF_MATCH_OPTS) : null,
+    whitelist: hasOwnProperty.call(env, 'NCONF_WHITELIST') ? JSON.parse(env.NCONF_WHITELIST) : null,
   });
 
   // pull camelCase data
@@ -116,3 +126,4 @@ function loadConfiguration() {
 
 module.exports = loadConfiguration;
 module.exports.globFiles = globFiles;
+module.exports.possibleJSONStringToArray = possibleJSONStringToArray;

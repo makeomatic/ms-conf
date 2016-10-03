@@ -1,11 +1,12 @@
 {
   "name": "ms-conf",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "wrapper over dotenv and nconf module for one line configuration loading",
   "main": "./lib/index.js",
   "scripts": {
     "prepublish": "./node_modules/.bin/babel ./src -d ./lib",
-    "test": "./node_modules/.bin/mocha"
+    "test": "npm run lint && ./node_modules/.bin/mocha",
+    "lint": "eslint ./src"
   },
   "keywords": [
     "microservice",
@@ -26,23 +27,23 @@
   },
   "homepage": "https://github.com/makeomatic/ms-conf#readme",
   "devDependencies": {
-    "babel-cli": "^6.11.4",
-    "babel-eslint": "^6.1.2",
+    "babel-cli": "^6.16.0",
+    "babel-eslint": "^7.0.0",
     "babel-plugin-transform-strict-mode": "^6.11.3",
-    "babel-register": "^6.11.6",
-    "bluebird": "^3.4.1",
-    "eslint": "^3.3.1",
-    "eslint-config-airbnb-base": "^5.0.2",
+    "babel-register": "^6.16.3",
+    "bluebird": "^3.4.6",
+    "eslint": "^3.7.0",
+    "eslint-config-airbnb-base": "^8.0.0",
     "eslint-plugin-import": "^1.13.0",
-    "eslint-plugin-mocha": "^4.3.0",
-    "mocha": "^3.0.2"
+    "eslint-plugin-mocha": "^4.5.1",
+    "mocha": "^3.1.0"
   },
   "dependencies": {
     "camelcase": "^3.0.0",
     "confidence": "^3.0.1",
     "debug": "^2.2.0",
     "dotenv": "^2.0.0",
-    "glob": "^7.0.5",
+    "glob": "^7.1.0",
     "lodash.merge": "^4.6.0",
     "lodash.reduce": "^4.6.0",
     "nconf": "^0.8.4"
