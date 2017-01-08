@@ -12,7 +12,7 @@ const path = require('path');
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 const env = process.env;
-const silent = hasOwnProperty.call(env, 'DOTENV_NOT_SILENT');
+const verbose = hasOwnProperty.call(env, 'DOTENV_NOT_SILENT') === false;
 const cwd = process.cwd();
 const isArray = Array.isArray;
 
@@ -107,11 +107,17 @@ function globFiles(filePaths, configuration = {}) {
 
 function loadConfiguration() {
   // load dotenv
-  dotenv.config({
-    silent,
+  const dotenvConfig = {
+    verbose,
     encoding: env.DOTENV_ENCODING || 'utf-8',
     path: env.DOTENV_FILE_PATH || `${cwd}/.env`,
-  });
+  };
+
+  // load dotenv and report error
+  const result = dotenv.config(dotenvConfig);
+  if (result.error) {
+    debug('failed to load %s due to', dotenvConfig.path, result.error);
+  }
 
   // do we camelize?
   const camelize = hasOwnProperty.call(env, 'NCONF_NO_CAMELCASE');
