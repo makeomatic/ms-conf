@@ -1,11 +1,11 @@
 {
   "name": "ms-conf",
-  "version": "2.4.0",
+  "version": "3.0.0",
   "description": "wrapper over dotenv and nconf module for one line configuration loading",
   "main": "./lib/index.js",
   "scripts": {
-    "prepublish": "./node_modules/.bin/babel ./src -d ./lib",
-    "test": "npm run lint && ./node_modules/.bin/mocha",
+    "prepublish": "babel ./src -d ./lib",
+    "test": "NODE_ENV=test npm run lint && mocha",
     "lint": "eslint ./src"
   },
   "keywords": [
@@ -34,8 +34,10 @@
     "bluebird": "^3.4.7",
     "eslint": "^3.13.0",
     "eslint-config-airbnb-base": "^11.0.0",
+    "eslint-config-makeomatic": "^1.0.1",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-mocha": "^4.8.0",
+    "eslint-plugin-promise": "^3.5.0",
     "mocha": "^3.2.0"
   },
   "dependencies": {

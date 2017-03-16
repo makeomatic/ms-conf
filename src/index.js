@@ -13,13 +13,13 @@ function reload() {
 
 // hot-reload enabler
 function enableReload() {
-  debug('enabling sighup');
+  debug('enabling sigusr');
   process.on('SIGUSR1', reload);
 }
 
 // hot-reload disabler
 function disableReload() {
-  debug('disabling sighup');
+  debug('disabling sigusr');
   process.removeListener('SIGUSR1', reload);
 }
 
@@ -31,14 +31,30 @@ function meta(key, opts) {
   return store.meta(key, opts);
 }
 
-// load first configuration
-reload();
-
 // init first configuration
-module.exports = {
-  get,
-  meta,
+module.exports = exports = {
   reload,
   enableReload,
   disableReload,
+  prependDefaultConfiguration: loadConfig.prependDefaultConfiguration,
 };
+
+// small util to ensure effective get calls
+function ensureStoreWasLoaded(obj, name, fn) {
+  Object.defineProperty(obj, name, {
+    configurable: true,
+    enumerable: true,
+    value: function loadStore(...args) {
+      if (!store) reload();
+      Object.defineProperty(obj, name, {
+        configurable: false,
+        enumerable: true,
+        value: fn,
+      });
+      return fn(...args);
+    },
+  });
+}
+
+ensureStoreWasLoaded(exports, 'get', get);
+ensureStoreWasLoaded(exports, 'meta', meta);

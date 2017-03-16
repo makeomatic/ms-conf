@@ -154,6 +154,24 @@ function loadConfiguration() {
   return configuration;
 }
 
+/**
+ * Add base configuration
+ */
+function prependDefaultConfiguration(baseConfig) {
+  assert.ok(baseConfig, 'must be a path to specific location');
+  assert.ok(typeof baseConfig === 'string');
+
+  let files = null;
+  if (env.NCONF_FILE_PATH) {
+    files = possibleJSONStringToArray(env.NCONF_FILE_PATH);
+    files.unshift(baseConfig);
+  } else {
+    files = [baseConfig];
+  }
+  env.NCONF_FILE_PATH = JSON.stringify(files);
+}
+
 module.exports = loadConfiguration;
 module.exports.globFiles = globFiles;
 module.exports.possibleJSONStringToArray = possibleJSONStringToArray;
+module.exports.prependDefaultConfiguration = prependDefaultConfiguration;
