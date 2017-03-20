@@ -1,6 +1,6 @@
 {
   "name": "ms-conf",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "wrapper over dotenv and nconf module for one line configuration loading",
   "main": "./lib/index.js",
   "scripts": {
