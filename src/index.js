@@ -46,11 +46,17 @@ function ensureStoreWasLoaded(obj, name, fn) {
     enumerable: true,
     value: function loadStore(...args) {
       if (!store) reload();
-      Object.defineProperty(obj, name, {
-        configurable: true,
-        enumerable: true,
-        value: fn,
-      });
+
+      // if it is the same property we can redefine it, otherwise
+      // it must remain the same
+      if (obj[name] === loadStore) {
+        Object.defineProperty(obj, name, {
+          configurable: true,
+          enumerable: true,
+          value: fn,
+        });
+      }
+
       return fn(...args);
     },
   });
