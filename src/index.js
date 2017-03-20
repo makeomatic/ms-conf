@@ -47,7 +47,7 @@ function ensureStoreWasLoaded(obj, name, fn) {
     value: function loadStore(...args) {
       if (!store) reload();
       Object.defineProperty(obj, name, {
-        configurable: false,
+        configurable: true,
         enumerable: true,
         value: fn,
       });
