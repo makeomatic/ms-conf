@@ -1,6 +1,7 @@
 const debug = require('debug')('ms-conf');
 const Confidence = require('confidence');
 const loadConfig = require('./load-config');
+const assert = require('assert');
 
 // uses confidence API to access store
 let store;
@@ -35,6 +36,8 @@ function meta(key, _opts) {
 }
 
 function setDefaultOpts(opts) {
+  assert.ok(opts, 'must be an object');
+  assert.ok(typeof opts === 'object', 'must be an object');
   defaultOpts = opts;
 }
 
