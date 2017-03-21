@@ -4,6 +4,7 @@ const loadConfig = require('./load-config');
 
 // uses confidence API to access store
 let store;
+let defaultOpts = {};
 
 // use this on sighup
 function reload() {
@@ -23,12 +24,18 @@ function disableReload() {
   process.removeListener('SIGUSR1', reload);
 }
 
-function get(key, opts) {
+function get(key, _opts) {
+  const opts = _opts || defaultOpts;
   return store.get(key, opts);
 }
 
-function meta(key, opts) {
+function meta(key, _opts) {
+  const opts = _opts || defaultOpts;
   return store.meta(key, opts);
+}
+
+function setDefaultOpts(opts) {
+  defaultOpts = opts;
 }
 
 // init first configuration
@@ -36,6 +43,7 @@ module.exports = exports = {
   reload,
   enableReload,
   disableReload,
+  setDefaultOpts,
   prependDefaultConfiguration: loadConfig.prependDefaultConfiguration,
 };
 

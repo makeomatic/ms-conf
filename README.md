@@ -61,11 +61,27 @@ confidence.disableReload();
 
 ## Utilities
 
-1. Load file pathd
+1. Load file path
 
 ```js
 const { globFiles } = require('ms-conf/lib/load-config');
 const config = globFiles(['/path/to/configs', '/path/to/config/direct.js', '/path/to/conf.json']);
+```
+
+2. setDefaultOpts
+
+```js
+const { setDefaultOpts } = require('ms-conf');
+
+setDefaultOpts({ env: process.env.NODE_ENV });
+```
+
+3. prependDefaultConfiguration
+
+```js
+const { prependDefaultConfiguration } = require('ms-conf');
+
+prependDefaultConfiguration(filePath);
 ```
 
 For a more detailed example - see tests
