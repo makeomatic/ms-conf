@@ -1,5 +1,7 @@
 # Configuration loading module
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/makeomatic/ms-conf.svg)](https://greenkeeper.io/)
+
 Combines confidence, dotenv, nconf and processes env configuration into camelcase;
 Each value is JSON parsed first if it is possible, therefore you can pass arrays/objects and boolean params through env
 
