@@ -16,6 +16,8 @@ const verbose = hasOwnProperty.call(env, 'DOTENV_NOT_SILENT') === false;
 const cwd = process.cwd();
 const isArray = Array.isArray;
 
+let appendConfiguration;
+
 // safe json parse
 function parseJSONSafe(possibleJSON) {
   try {
@@ -44,7 +46,7 @@ const readFile = configuration => (absPath) => {
 
   try {
     // delete loaded file
-    delete require.cache[absPath];
+    require.cache[absPath] = undefined;
     debug('loading %s', absPath);
     // eslint-disable-next-line global-require, import/no-dynamic-require
     merge(configuration, require(absPath));
@@ -151,6 +153,10 @@ function loadConfiguration() {
     globFiles(filePaths, configuration);
   }
 
+  if (appendConfiguration !== undefined) {
+    merge(configuration, appendConfiguration);
+  }
+
   return configuration;
 }
 
@@ -168,10 +174,20 @@ function prependDefaultConfiguration(baseConfig) {
   } else {
     files = [baseConfig];
   }
+
   env.NCONF_FILE_PATH = JSON.stringify(files);
 }
 
-module.exports = loadConfiguration;
-module.exports.globFiles = globFiles;
-module.exports.possibleJSONStringToArray = possibleJSONStringToArray;
-module.exports.prependDefaultConfiguration = prependDefaultConfiguration;
+/**
+ * Appends passed configuration to resolved config
+ */
+function append(configuration) {
+  appendConfiguration = configuration;
+}
+
+exports = module.exports = loadConfiguration;
+
+exports.globFiles = globFiles;
+exports.possibleJSONStringToArray = possibleJSONStringToArray;
+exports.prependDefaultConfiguration = prependDefaultConfiguration;
+exports.append = append;

@@ -17,12 +17,14 @@ function reload() {
 function enableReload() {
   debug('enabling sigusr');
   process.on('SIGUSR1', reload);
+  process.on('SIGUSR2', reload);
 }
 
 // hot-reload disabler
 function disableReload() {
   debug('disabling sigusr');
   process.removeListener('SIGUSR1', reload);
+  process.removeListener('SIGUSR2', reload);
 }
 
 function get(key, _opts) {
@@ -47,6 +49,7 @@ module.exports = exports = {
   enableReload,
   disableReload,
   setDefaultOpts,
+  append: loadConfig.append,
   prependDefaultConfiguration: loadConfig.prependDefaultConfiguration,
 };
 

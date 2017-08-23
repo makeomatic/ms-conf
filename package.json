@@ -1,58 +1,81 @@
 {
   "name": "ms-conf",
-  "version": "3.1.2",
+  "version": "0.0.0-development",
   "description": "wrapper over dotenv and nconf module for one line configuration loading",
   "main": "./lib/index.js",
   "scripts": {
-    "prepublish": "babel ./src -d ./lib",
-    "test": "NODE_ENV=test npm run lint && mocha",
-    "lint": "eslint ./src"
+    "prepublishOnly": "rimraf ./lib; babel ./src -d ./lib",
+    "test": "npm run lint && cross-env NODE_ENV=test nyc mocha",
+    "lint": "eslint ./src",
+    "commit": "simple-commit-message",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "keywords": [
-    "microservice",
-    "amqp",
     "configuration",
     "nconf",
     "env",
     "docker"
   ],
   "files": [
-    "index.js",
-    "lib/*.js"
+    "lib/",
+    "src/"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/makeomatic/ms-conf.git"
   },
-  "author": "Vitaly Aminev <v@makeomatic.ru>",
+  "author": "Vitaly Aminev <v@makeomatic.ca>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/makeomatic/ms-conf/issues"
   },
   "homepage": "https://github.com/makeomatic/ms-conf#readme",
   "devDependencies": {
-    "babel-cli": "^6.18.0",
-    "babel-eslint": "^7.1.1",
-    "babel-plugin-transform-strict-mode": "^6.18.0",
-    "babel-register": "^6.18.0",
+    "@makeomatic/deploy": "^4.1.4",
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^7.2.3",
+    "babel-plugin-istanbul": "^4.1.4",
+    "babel-plugin-transform-strict-mode": "^6.24.1",
+    "babel-register": "^6.26.0",
     "bluebird": "^3.4.7",
-    "eslint": "^3.13.0",
-    "eslint-config-airbnb-base": "^11.0.0",
-    "eslint-config-makeomatic": "^1.0.1",
-    "eslint-plugin-import": "^2.2.0",
-    "eslint-plugin-mocha": "^4.8.0",
+    "codecov": "^2.3.0",
+    "cross-env": "^5.0.5",
+    "eslint": "^4.5.0",
+    "eslint-config-airbnb-base": "^11.3.2",
+    "eslint-config-makeomatic": "^1.1.0",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-mocha": "^4.11.0",
     "eslint-plugin-promise": "^3.5.0",
-    "mocha": "^3.2.0"
+    "mocha": "^3.5.0",
+    "nyc": "^11.1.0",
+    "sinon": "^3.2.1"
   },
   "dependencies": {
-    "camelcase": "^4.0.0",
+    "camelcase": "^4.1.0",
     "confidence": "^3.0.2",
-    "debug": "^2.6.0",
+    "debug": "^3.0.0",
     "dotenv": "^4.0.0",
-    "glob": "^7.1.1",
+    "glob": "^7.1.2",
     "lodash.merge": "^4.6.0",
     "lodash.reduce": "^4.6.0",
     "lodash.uniq": "^4.5.0",
     "nconf": "^0.8.4"
+  },
+  "release": {
+    "analyzeCommits": "simple-commit-message",
+    "generateNotes": "github-post-release",
+    "verifyConditions": "@makeomatic/condition-semaphore",
+    "getLastRelease": "@makeomatic/last-release-npm",
+    "branch": "master"
+  },
+  "config": {
+    "pre-git": {
+      "commit-msg": "simple",
+      "pre-commit": [],
+      "pre-push": [],
+      "post-commit": [],
+      "post-checkout": [],
+      "post-merge": []
+    }
   }
 }

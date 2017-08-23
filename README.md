@@ -53,10 +53,10 @@ const config = confidence.get('/');
 
 ```js
 confidence.enableReload();
-// now SIGHUP signal to process would reload configuration
+// send SIGUSR1 or SIGUSR2 signal to process to reload configuration
 
 confidence.disableReload();
-// wont listen for SIGUSR1 events any longer
+// wont listen for SIGUSR1 or SIGUSR2 events any longer
 ```
 
 ## Utilities
