@@ -48,14 +48,15 @@
     "eslint-plugin-promise": "^3.5.0",
     "mocha": "^3.5.0",
     "nyc": "^11.1.0",
-    "sinon": "^3.2.1",
-    "semantic-release": "^7.0.2"
+    "semantic-release": "^7.0.2",
+    "sinon": "^3.2.1"
   },
   "dependencies": {
     "camelcase": "^4.1.0",
     "confidence": "^3.0.2",
     "debug": "^3.0.0",
     "dotenv": "^4.0.0",
+    "eventemitter3": "^2.0.3",
     "glob": "^7.1.2",
     "lodash.merge": "^4.6.0",
     "lodash.reduce": "^4.6.0",

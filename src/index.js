@@ -1,3 +1,4 @@
+const EventEmitter = require('eventemitter3');
 const debug = require('debug')('ms-conf');
 const Confidence = require('confidence');
 const loadConfig = require('./load-config');
@@ -6,11 +7,13 @@ const assert = require('assert');
 // uses confidence API to access store
 let store;
 let defaultOpts = {};
+const EE = new EventEmitter();
 
 // use this on sighup
 function reload() {
   debug('reloading configuration');
   store = new Confidence.Store(loadConfig());
+  EE.emit('reload', store);
 }
 
 // hot-reload enabler
@@ -51,6 +54,13 @@ module.exports = exports = {
   setDefaultOpts,
   append: loadConfig.append,
   prependDefaultConfiguration: loadConfig.prependDefaultConfiguration,
+  onReload(fn) {
+    EE.on('reload', fn);
+  },
+  offReload(fn) {
+    EE.off('reload', fn);
+  },
+  EE,
 };
 
 // small util to ensure effective get calls
