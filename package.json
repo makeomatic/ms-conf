@@ -22,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/makeomatic/ms-conf.git"
+    "url": "https://github.com/makeomatic/ms-conf.git"
   },
   "author": "Vitaly Aminev <v@makeomatic.ca>",
   "license": "MIT",
@@ -48,7 +48,8 @@
     "eslint-plugin-promise": "^3.5.0",
     "mocha": "^3.5.0",
     "nyc": "^11.1.0",
-    "sinon": "^3.2.1"
+    "sinon": "^3.2.1",
+    "semantic-release": "^7.0.2"
   },
   "dependencies": {
     "camelcase": "^4.1.0",
