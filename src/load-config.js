@@ -82,7 +82,7 @@ function resolveAbsPaths(paths) {
     } else if (stats.isDirectory()) {
       // NOTE: can be improved
       // this is an extra call, but we dont care since it's a one-time op
-      const absPaths = glob.sync(`${filePath}/*.{js,json}`).map(resolve);
+      const absPaths = glob.sync(`${filePath}/*.{ts,js,json}`).map(resolve);
       resolvedPaths.push(...absPaths);
     }
 
