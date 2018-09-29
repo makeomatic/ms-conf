@@ -10,11 +10,11 @@ const fs = require('fs');
 const glob = require('glob');
 const path = require('path');
 
-const hasOwnProperty = Object.prototype.hasOwnProperty;
-const env = process.env;
+const { hasOwnProperty } = Object.prototype;
+const { isArray } = Array;
+const { env } = process;
 const verbose = hasOwnProperty.call(env, 'DOTENV_NOT_SILENT') === false;
 const cwd = process.cwd();
-const isArray = Array.isArray;
 
 let appendConfiguration;
 
