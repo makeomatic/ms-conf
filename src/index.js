@@ -1,8 +1,8 @@
 const EventEmitter = require('eventemitter3');
 const debug = require('debug')('ms-conf');
 const Confidence = require('confidence');
-const loadConfig = require('./load-config');
 const assert = require('assert');
+const loadConfig = require('./load-config');
 
 // uses confidence API to access store
 let store;

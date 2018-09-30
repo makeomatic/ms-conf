@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 const assert = require('assert');
 const sinon = require('sinon');
 
-const env = process.env;
+const { env } = process;
 
 describe('Configuration loader', () => {
   let store;
