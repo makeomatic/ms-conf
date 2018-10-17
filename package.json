@@ -7,9 +7,7 @@
     "prepublishOnly": "rimraf ./lib; babel ./src -d ./lib",
     "test": "yarn lint && cross-env NODE_ENV=test nyc mocha",
     "lint": "eslint ./src",
-    "semantic-release": "semantic-release",
-    "commitmsg": "commitlint -e $GIT_PARAMS",
-    "preparecommitmsg": "./node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $GIT_PARAMS"
+    "semantic-release": "semantic-release"
   },
   "keywords": [
     "configuration",
@@ -36,32 +34,38 @@
     "@babel/core": "^7.0.0",
     "@babel/plugin-transform-strict-mode": "^7.0.0",
     "@babel/register": "^7.0.0",
-    "@makeomatic/deploy": "^7.0.1",
+    "@makeomatic/deploy": "^8.0.1",
     "babel-eslint": "^10.0.1",
-    "babel-plugin-istanbul": "^5.0.1",
+    "babel-plugin-istanbul": "^5.1.0",
     "bluebird": "^3.5.2",
     "codecov": "^3.1.0",
     "cross-env": "^5.2.0",
-    "eslint": "^5.6.1",
+    "eslint": "^5.7.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-makeomatic": "^3.0.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-mocha": "^5.2.0",
     "eslint-plugin-promise": "^4.0.1",
     "mocha": "^5.2.0",
-    "nyc": "^13.0.1",
-    "sinon": "^6.3.4"
+    "nyc": "^13.1.0",
+    "sinon": "^7.0.0"
   },
   "dependencies": {
     "camelcase": "^5.0.0",
     "confidence": "^3.0.2",
-    "debug": "^4.0.1",
-    "dotenv": "^6.0.0",
+    "debug": "^4.1.0",
+    "dotenv": "^6.1.0",
     "eventemitter3": "^3.1.0",
     "glob": "^7.1.3",
     "lodash.merge": "^4.6.1",
     "lodash.reduce": "^4.6.0",
     "lodash.uniq": "^4.5.0",
     "nconf": "^0.10.0"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS",
+      "prepare-commit-msg": "./node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $HUSKY_GIT_PARAMS"
+    }
   }
 }
