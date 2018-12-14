@@ -3,7 +3,7 @@ const camelCase = require('camelcase');
 const nconf = require('nconf');
 const dotenv = require('dotenv');
 const reduce = require('lodash.reduce');
-const merge = require('lodash.merge');
+const merge = require('lodash.mergewith');
 const uniq = require('lodash.uniq');
 const assert = require('assert');
 const fs = require('fs');
@@ -40,6 +40,14 @@ const camelCaseKeys = camelize => function processKeys(obj, value, key) {
   return obj;
 };
 
+const customizer = (objValue, srcValue) => {
+  if (Array.isArray(srcValue)) {
+    return srcValue;
+  }
+
+  return undefined;
+};
+
 // read file from path and try to parse it
 const readFile = configuration => (absPath) => {
   assert(path.isAbsolute(absPath), `${absPath} must be an absolute path`);
@@ -49,7 +57,7 @@ const readFile = configuration => (absPath) => {
     require.cache[absPath] = undefined;
     debug('loading %s', absPath);
     // eslint-disable-next-line global-require, import/no-dynamic-require
-    merge(configuration, require(absPath));
+    merge(configuration, require(absPath), customizer);
   } catch (e) {
     process.stderr.write(`Failed to include file ${absPath}, err: ${e.message}\n`);
   }
@@ -158,7 +166,7 @@ function loadConfiguration() {
   }
 
   if (appendConfiguration !== undefined) {
-    merge(configuration, appendConfiguration);
+    merge(configuration, appendConfiguration, customizer);
   }
 
   return configuration;

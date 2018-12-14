@@ -20,7 +20,7 @@ describe('Configuration loader', () => {
   });
 
   it('should correctly use match env option', () => {
-    assert.equal(Object.keys(mod).length, 7);
+    assert.equal(Object.keys(mod).length, 8);
     assert.ok(mod.amqp);
     assert.ok(mod.value);
     assert.ok(mod.expanded);
@@ -66,6 +66,7 @@ describe('Configuration loader', () => {
         culture: true,
       },
       pot: 'is-json',
+      array: [1, 3],
     });
   });
 
