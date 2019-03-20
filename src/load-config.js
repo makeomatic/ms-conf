@@ -49,7 +49,7 @@ const customizer = (objValue, srcValue) => {
 };
 
 // read file from path and try to parse it
-const readFile = configuration => (absPath) => {
+const readFile = (configuration, crashOnError) => (absPath) => {
   assert(path.isAbsolute(absPath), `${absPath} must be an absolute path`);
 
   try {
@@ -60,6 +60,9 @@ const readFile = configuration => (absPath) => {
     merge(configuration, require(absPath), customizer);
   } catch (e) {
     process.stderr.write(`Failed to include file ${absPath}, err: ${e.message}\n`);
+    if (crashOnError) {
+      throw e;
+    }
   }
 };
 
@@ -104,14 +107,14 @@ function resolveAbsPaths(paths) {
   return uniq(absolutePaths);
 }
 
-function globFiles(filePaths, configuration = {}) {
+function globFiles(filePaths, configuration = {}, crashOnError) {
   // if we get parsed JSON array - use it right away
   const files = isArray(filePaths)
     ? filePaths
     : possibleJSONStringToArray(filePaths);
 
   // prepare merger
-  const mergeFile = readFile(configuration);
+  const mergeFile = readFile(configuration, crashOnError);
 
   // resolve paths and merge
   resolveAbsPaths(files).forEach(mergeFile);
@@ -119,7 +122,7 @@ function globFiles(filePaths, configuration = {}) {
   return configuration;
 }
 
-function loadConfiguration() {
+function loadConfiguration(crashOnError) {
   // load dotenv
   const dotenvConfig = {
     verbose,
@@ -162,7 +165,7 @@ function loadConfiguration() {
     //
     // nconf.file(env.NCONF_FILE_PATH);
 
-    globFiles(filePaths, configuration);
+    globFiles(filePaths, configuration, crashOnError);
   }
 
   if (appendConfiguration !== undefined) {

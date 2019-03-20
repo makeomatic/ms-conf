@@ -7,12 +7,13 @@ const loadConfig = require('./load-config');
 // uses confidence API to access store
 let store;
 let defaultOpts = {};
+let crashOnError = false;
 const EE = new EventEmitter();
 
 // use this on sighup
 function reload() {
   debug('reloading configuration');
-  store = new Confidence.Store(loadConfig());
+  store = new Confidence.Store(loadConfig(crashOnError));
   EE.emit('reload', store);
 }
 
@@ -85,6 +86,16 @@ function ensureStoreWasLoaded(obj, name, fn) {
     },
   });
 }
+
+Object.defineProperty(exports, 'crashOnError', {
+  enumerable: true,
+  get() {
+    return crashOnError;
+  },
+  set(newValue) {
+    crashOnError = newValue;
+  },
+});
 
 ensureStoreWasLoaded(exports, 'get', get);
 ensureStoreWasLoaded(exports, 'meta', meta);

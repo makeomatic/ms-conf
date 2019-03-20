@@ -130,4 +130,13 @@ describe('Configuration loader', () => {
         process.removeListener('SIGUSR2', spy);
       });
   });
+
+  it('crashes on error when reading files', () => {
+    env.NCONF_FILE_PATH = JSON.stringify([
+      `${__dirname}/dir`,
+    ]);
+
+    store.crashOnError = true;
+    assert.throws(() => store.reload(), 'must throw with malformed.json');
+  });
 });

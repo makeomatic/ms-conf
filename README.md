@@ -6,6 +6,7 @@ Each value is JSON parsed first if it is possible, therefore you can pass arrays
 ## Installation
 
 `npm i ms-conf -S`
+`yarn add ms-conf`
 
 ## Configuration
 
@@ -82,6 +83,16 @@ setDefaultOpts({ env: process.env.NODE_ENV });
 const { prependDefaultConfiguration } = require('ms-conf');
 
 prependDefaultConfiguration(filePath);
+```
+
+4. crash when configuration files can't be loaded
+
+```js
+const conf = require('ms-conf');
+
+conf.crashOnError = true;
+conf.prependDefaultConfiguration(['/path/to/config.json']);
+conf.get('/path') // would trigger crash - useful during initial load
 ```
 
 For a more detailed example - see tests
