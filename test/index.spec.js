@@ -20,10 +20,14 @@ describe('Configuration loader', () => {
   });
 
   it('should correctly use match env option', () => {
-    assert.equal(Object.keys(mod).length, 8);
+    assert.equal(Object.keys(mod).length, 9);
     assert.ok(mod.amqp);
     assert.ok(mod.value);
     assert.ok(mod.expanded);
+  });
+
+  it('should overwrite config values from file using env values', () => {
+    assert.strictEqual(mod.overwritten.by.env, true);
   });
 
   it('correctly omits options', () => {
@@ -67,6 +71,7 @@ describe('Configuration loader', () => {
       },
       pot: 'is-json',
       array: [1, 3],
+      overwritten: { by: { env: true } },
     });
   });
 
