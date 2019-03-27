@@ -156,7 +156,8 @@ function loadConfiguration(crashOnError) {
 
   // pull camelCase data
   const namespace = nconf.get(namespaceKey);
-  const configuration = reduce(namespace, camelCaseKeys(camelize), {});
+  const configFromEnv = reduce(namespace, camelCaseKeys(camelize), {});
+  const config = Object.create(null);
 
   if (filePaths) {
     // nconf file does not merge configuration, it will either omit it
@@ -165,14 +166,16 @@ function loadConfiguration(crashOnError) {
     //
     // nconf.file(env.NCONF_FILE_PATH);
 
-    globFiles(filePaths, configuration, crashOnError);
+    globFiles(filePaths, config, crashOnError);
   }
+
+  merge(config, configFromEnv);
 
   if (appendConfiguration !== undefined) {
-    merge(configuration, appendConfiguration, customizer);
+    merge(config, appendConfiguration, customizer);
   }
 
-  return configuration;
+  return config;
 }
 
 /**
