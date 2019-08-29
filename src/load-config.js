@@ -28,7 +28,7 @@ function parseJSONSafe(possibleJSON) {
 }
 
 // make camelCase keys
-const camelCaseKeys = camelize => function processKeys(obj, value, key) {
+const camelCaseKeys = (camelize) => function processKeys(obj, value, key) {
   const camelized = camelize ? key : camelCase(key);
 
   if (value && typeof value === 'object') {
@@ -96,7 +96,7 @@ function resolveAbsPaths(paths) {
       const absPaths = glob
         .sync(`${filePath}/*.{ts,js,json}`)
         .map(resolve)
-        .filter(x => x.endsWith('.d.ts') === false);
+        .filter((x) => x.endsWith('.d.ts') === false);
 
       resolvedPaths.push(...absPaths);
     }

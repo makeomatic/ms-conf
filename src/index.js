@@ -1,6 +1,6 @@
 const EventEmitter = require('eventemitter3');
 const debug = require('debug')('ms-conf');
-const Confidence = require('confidence');
+const Confidence = require('@makeomatic/confidence');
 const assert = require('assert');
 const loadConfig = require('./load-config');
 
