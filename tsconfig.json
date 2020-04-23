@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ES2019",
+    "declaration": true,
+    "alwaysStrict": true,
+    "sourceMap": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "preserveConstEnums": true,
+    "composite": true
+  },
+  "exclude": [
+    "**/node_modules/**",
+    "lib",
+    "dist"
+  ]
+}

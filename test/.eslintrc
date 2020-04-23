@@ -1,12 +1,6 @@
 {
-  "plugins": [
-    "mocha"
-  ],
+  "plugins": ["mocha"],
   "env": {
     "mocha": true
-  },
-  "rules": {
-    "prefer-arrow-callback": 0,
-    "global-require": 0
   }
 }
