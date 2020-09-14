@@ -1,6 +1,7 @@
 import EventEmitter = require('eventemitter3');
 import _debug = require('debug');
-import { Store, Criteria } from '@makeomatic/confidence'
+import type { Criteria } from '@makeomatic/confidence' // eslint-disable-line @typescript-eslint/no-unused-vars
+import { Store } from '@makeomatic/confidence'
 import { strict as assert } from 'assert'
 import { loadConfiguration, append, prependDefaultConfiguration } from './load-config'
 
@@ -15,21 +16,21 @@ const EE = new EventEmitter()
 export { append, prependDefaultConfiguration, EE }
 
 // use this on sighup
-export function reload() {
+export function reload(): void {
   debug('reloading configuration')
   store = new Store(loadConfiguration(crashOnError))
   EE.emit('reload', store)
 }
 
 // hot-reload enabler
-export function enableReload() {
+export function enableReload(): void {
   debug('enabling sigusr')
   process.on('SIGUSR1', reload)
   process.on('SIGUSR2', reload)
 }
 
 // hot-reload disabler
-export function disableReload() {
+export function disableReload(): void {
   debug('disabling sigusr')
   process.removeListener('SIGUSR1', reload)
   process.removeListener('SIGUSR2', reload)
@@ -45,21 +46,21 @@ export function meta<Response>(key: string, opts: Criteria = defaultOpts): Respo
   return store.meta(key, opts)
 }
 
-export function setDefaultOpts(opts: Criteria) {
+export function setDefaultOpts(opts: Criteria): void {
   assert.ok(opts, 'must be an object')
   assert.ok(typeof opts === 'object', 'must be an object')
   defaultOpts = opts
 }
 
-export function onReload(fn: EventEmitter.ListenerFn) {
+export function onReload(fn: EventEmitter.ListenerFn): void {
   EE.on('reload', fn)
 }
 
-export function offReload(fn: EventEmitter.ListenerFn) {
+export function offReload(fn: EventEmitter.ListenerFn): void {
   EE.off('reload', fn)
 }
 
-export function setCrashOnError(val: boolean) {
+export function setCrashOnError(val: boolean): void {
   crashOnError = val
 }
 

@@ -71,7 +71,7 @@ const readFile = (configuration: any, crashOnError: boolean) => (absPath: string
   }
 }
 
-export function possibleJSONStringToArray(filePaths: string) {
+export function possibleJSONStringToArray(filePaths: string): string[] {
   let files
   try {
     files = JSON.parse(filePaths)
@@ -112,7 +112,7 @@ function resolveAbsPaths(paths: string[]) {
   return uniq(absolutePaths)
 }
 
-export function globFiles(filePaths: string | string[], configuration: any = {}, crashOnError: boolean) {
+export function globFiles(filePaths: string | string[], configuration: any = {}, crashOnError: boolean): void {
   // if we get parsed JSON array - use it right away
   const files = isArray(filePaths)
     ? filePaths
@@ -127,7 +127,7 @@ export function globFiles(filePaths: string | string[], configuration: any = {},
   return configuration
 }
 
-export function loadConfiguration(crashOnError: boolean) {
+export function loadConfiguration(crashOnError: boolean): void {
   // load dotenv
   const dotenvConfig = {
     verbose,
@@ -186,9 +186,9 @@ export function loadConfiguration(crashOnError: boolean) {
 /**
  * Add base configuration
  */
-export function prependDefaultConfiguration(baseConfig: unknown) {
-  assert.ok(baseConfig, 'must be a path to specific location')
-  assert.ok(typeof baseConfig === 'string')
+export function prependDefaultConfiguration(baseConfig: unknown): void {
+  assert(baseConfig, 'must be a path to specific location')
+  assert(typeof baseConfig === 'string')
 
   let files = null
   if (env.NCONF_FILE_PATH) {
@@ -204,6 +204,6 @@ export function prependDefaultConfiguration(baseConfig: unknown) {
 /**
  * Appends passed configuration to resolved config
  */
-export function append(configuration: any) {
+export function append(configuration: unknown): void {
   appendConfiguration = configuration
 }

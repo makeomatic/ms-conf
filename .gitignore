@@ -32,3 +32,4 @@ node_modules
 # compiled source code
 lib
 *.tsbuildinfo
+.vscode/
