@@ -19,7 +19,7 @@ describe('Configuration loader', () => {
   })
 
   it('should correctly use match env option', () => {
-    assert.equal(Object.keys(mod).length, 9)
+    assert.strictEqual(Object.keys(mod).length, 10)
     assert.ok(mod.amqp)
     assert.ok(mod.value)
     assert.ok(mod.expanded)
@@ -35,18 +35,18 @@ describe('Configuration loader', () => {
   })
 
   it('does not expand values', () => {
-    assert.equal(mod.expanded, '$MS_CONF___VALUE')
-    assert.equal(mod.value, 'darn')
+    assert.strictEqual(mod.expanded, '$MS_CONF___VALUE')
+    assert.strictEqual(mod.value, 'darn')
   })
 
   it('parses correct json and returns original text if it is not', () => {
     assert.deepEqual(mod.amqp.hosts, ['127.0.0.1'])
-    assert.equal(mod.amqp.invalidJson, '{"test":bad}')
+    assert.strictEqual(mod.amqp.invalidJson, '{"test":bad}')
   })
 
   it('file was loaded and configuration was merged', () => {
     assert.ok(mod.my)
-    assert.equal(mod.amqp.ssl, false)
+    assert.strictEqual(mod.amqp.ssl, false)
   })
 
   it('produces correct configuration', () => {
@@ -70,6 +70,7 @@ describe('Configuration loader', () => {
       },
       pot: 'is-json',
       array: [1, 3],
+      ok: null,
       overwritten: { by: { env: true } },
     })
   })
@@ -98,7 +99,7 @@ describe('Configuration loader', () => {
       boose: 'works',
     })
 
-    assert.equal(store.get('/boose'), undefined)
+    assert.strictEqual(store.get('/boose'), undefined)
     process.kill(process.pid, 'SIGUSR2')
 
     // SIGHUP comes in as async action
@@ -125,8 +126,8 @@ describe('Configuration loader', () => {
     // SIGHUP comes in as async action
     return delay(10)
       .then(() => {
-        assert.equal(store.get('/reloaded'), true)
-        assert.equal(spy.calledOnce, true)
+        assert.strictEqual(store.get('/reloaded'), true)
+        assert.strictEqual(spy.calledOnce, true)
         return null
       })
       .finally(() => {

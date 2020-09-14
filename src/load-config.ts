@@ -20,7 +20,7 @@ const cwd = process.cwd()
 let appendConfiguration: any
 
 // safe json parse
-function parseJSONSafe(possibleJSON: string) {
+function parseJSONSafe(possibleJSON: string): unknown {
   try {
     return JSON.parse(possibleJSON)
   } catch (e) {
@@ -29,13 +29,23 @@ function parseJSONSafe(possibleJSON: string) {
 }
 
 // make camelCase keys
-const camelCaseKeys = (camelize: boolean) => function processKeys(obj: any, value: any, key: string) {
+const camelCaseKeys = (camelize: boolean) => function processKeys(obj: Record<string, unknown>, value: unknown, key: string) {
   const camelized = camelize ? key : camelCase(key)
 
-  if (value && typeof value === 'object') {
-    reduce(value, processKeys, (obj[camelized] = {}))
-  } else {
-    obj[camelized] = parseJSONSafe(value)
+  if (value == null) {
+    obj[camelized] = value
+    return obj
+  }
+
+  switch (typeof value) {
+    case 'object':
+      reduce(value, processKeys, (obj[camelized] = Object.create(null)))
+      break
+    case 'string':
+      obj[camelized] = parseJSONSafe(value)
+      break
+    default:
+      obj[camelized] = value
   }
 
   return obj
@@ -45,7 +55,7 @@ const camelCaseKeys = (camelize: boolean) => function processKeys(obj: any, valu
  * @param _ overwrite value, not used
  * @param srcValue
  */
-const customizer = (_: any, srcValue: any | any[]) => {
+const customizer = (_: any, srcValue: unknown | unknown[]): unknown | unknown[] | undefined => {
   if (Array.isArray(srcValue)) {
     return srcValue
   }
@@ -86,11 +96,11 @@ export function possibleJSONStringToArray(filePaths: string): string[] {
   return files
 }
 
-function resolve(filePath: string) {
+function resolve(filePath: string): string {
   return require.resolve(filePath)
 }
 
-function resolveAbsPaths(paths: string[]) {
+function resolveAbsPaths(paths: string[]): string[] {
   const absolutePaths = paths.reduce((resolvedPaths: string[], filePath) => {
     const stats = fs.statSync(filePath)
     if (stats.isFile()) {
