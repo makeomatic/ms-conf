@@ -1,14 +1,14 @@
-import { strict as assert } from 'assert'
-import _debug = require('debug')
-import camelCase = require('camelcase');
-import nconf = require('nconf');
-import dotenv = require('dotenv');
-import reduce = require('lodash.reduce');
-import merge = require('lodash.mergewith');
-import uniq = require('lodash.uniq');
-import fs = require('fs');
-import glob = require('glob');
-import path = require('path');
+import { strict as assert } from 'node:assert'
+import _debug from 'debug'
+import camelCase from 'camelcase'
+import nconf from 'nconf'
+import dotenv from 'dotenv'
+import reduce from 'lodash.reduce'
+import merge from 'lodash.mergewith'
+import fs from 'node:fs'
+import { sync } from 'glob'
+import path from 'path'
+import parse from 'secure-json-parse'
 
 const debug = _debug('ms-conf')
 const { hasOwnProperty } = Object.prototype
@@ -17,12 +17,10 @@ const { env } = process
 const verbose = hasOwnProperty.call(env, 'DOTENV_NOT_SILENT') === false
 const cwd = process.cwd()
 
-let appendConfiguration: any
-
 // safe json parse
 function parseJSONSafe(possibleJSON: string): unknown {
   try {
-    return JSON.parse(possibleJSON)
+    return parse(possibleJSON)
   } catch (e) {
     return possibleJSON
   }
@@ -37,15 +35,15 @@ const camelCaseKeys = (camelize: boolean) => function processKeys(obj: Record<st
     return obj
   }
 
-  switch (typeof value) {
-    case 'object':
-      reduce(value, processKeys, (obj[camelized] = Object.create(null)))
-      break
-    case 'string':
-      obj[camelized] = parseJSONSafe(value)
-      break
-    default:
-      obj[camelized] = value
+  if (typeof value === 'object') {
+    const gatherer = obj[camelized] = Object.create(null)
+    for (const [innerKey, innerValue] of Object.entries(value)) {
+      processKeys(gatherer, innerValue, innerKey)
+    }
+  } else if (typeof value === 'string') {
+    obj[camelized] = parseJSONSafe(value)
+  } else {
+    obj[camelized] = value
   }
 
   return obj
@@ -64,7 +62,7 @@ const customizer = (_: any, srcValue: unknown | unknown[]): unknown | unknown[] 
 }
 
 // read file from path and try to parse it
-const readFile = (configuration: any, crashOnError: boolean) => (absPath: string) => {
+const readFileFactory = (configuration: any, crashOnError: boolean) => (absPath: string) => {
   assert(path.isAbsolute(absPath), `${absPath} must be an absolute path`)
 
   try {
@@ -73,10 +71,11 @@ const readFile = (configuration: any, crashOnError: boolean) => (absPath: string
     debug('loading %s', absPath)
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     merge(configuration, require(absPath), customizer)
-  } catch (e) {
-    process.stderr.write(`Failed to include file ${absPath}, err: ${e.message}\n`)
+  } catch (err: any) {
     if (crashOnError) {
-      throw e
+      throw err
+    } else {
+      process.stderr.write(`Failed to include file ${absPath}, err: ${err.message}\n`)
     }
   }
 }
@@ -108,8 +107,7 @@ function resolveAbsPaths(paths: string[]): string[] {
     } else if (stats.isDirectory()) {
       // NOTE: can be improved
       // this is an extra call, but we dont care since it's a one-time op
-      const absPaths = glob
-        .sync(`${filePath}/*.{ts,js,json}`)
+      const absPaths = sync(`${filePath}/*.{ts,js,cjs,json}`)
         .map(resolve)
         .filter((x) => x.endsWith('.d.ts') === false)
 
@@ -119,17 +117,26 @@ function resolveAbsPaths(paths: string[]): string[] {
     return resolvedPaths
   }, [])
 
-  return uniq(absolutePaths)
+  return Array.from(new Set(absolutePaths))
 }
 
-export function globFiles(filePaths: string | string[], configuration: any = {}, crashOnError: boolean): void {
+export function globFiles(
+  prependFile: string | undefined,
+  filePaths: string | string[] | undefined = [],
+  configuration: any = {},
+  crashOnError = true
+): void {
   // if we get parsed JSON array - use it right away
   const files = isArray(filePaths)
     ? filePaths
     : possibleJSONStringToArray(filePaths)
 
+  if (typeof prependFile === 'string') {
+    files.unshift(prependFile)
+  }
+
   // prepare merger
-  const mergeFile = readFile(configuration, crashOnError)
+  const mergeFile = readFileFactory(configuration, crashOnError)
 
   // resolve paths and merge
   resolveAbsPaths(files).forEach(mergeFile)
@@ -137,7 +144,7 @@ export function globFiles(filePaths: string | string[], configuration: any = {},
   return configuration
 }
 
-export function loadConfiguration(crashOnError: boolean): void {
+export function loadConfiguration(crashOnError: boolean, prependFile?: string, appendConfiguration?: any): void {
   // load dotenv
   const dotenvConfig = {
     verbose,
@@ -174,14 +181,14 @@ export function loadConfiguration(crashOnError: boolean): void {
   const configFromEnv = reduce(namespace, camelCaseKeys(camelize), {})
   const config = Object.create(null)
 
-  if (filePaths) {
+  if (filePaths || prependFile) {
     // nconf file does not merge configuration, it will either omit it
     // or overwrite it, since it's JSON and is already parsed, what we will
     // do is pass it into configuration as is after it was already camelCased and merged
     //
     // nconf.file(env.NCONF_FILE_PATH);
 
-    globFiles(filePaths, config, crashOnError)
+    globFiles(prependFile, filePaths, config, crashOnError)
   }
 
   merge(config, configFromEnv)
@@ -191,29 +198,4 @@ export function loadConfiguration(crashOnError: boolean): void {
   }
 
   return config
-}
-
-/**
- * Add base configuration
- */
-export function prependDefaultConfiguration(baseConfig: unknown): void {
-  assert(baseConfig, 'must be a path to specific location')
-  assert(typeof baseConfig === 'string')
-
-  let files = null
-  if (env.NCONF_FILE_PATH) {
-    files = possibleJSONStringToArray(env.NCONF_FILE_PATH)
-    files.unshift(baseConfig)
-  } else {
-    files = [baseConfig]
-  }
-
-  env.NCONF_FILE_PATH = JSON.stringify(files)
-}
-
-/**
- * Appends passed configuration to resolved config
- */
-export function append(configuration: unknown): void {
-  appendConfiguration = configuration
 }
