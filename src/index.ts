@@ -12,6 +12,8 @@ export interface StoreConfig {
   defaultOpts: Criteria
 }
 
+export { globFiles } from './load-config'
+
 export class Store extends EventEmitter {
   public readonly opts: Criteria
 

@@ -5,8 +5,7 @@ Each value is JSON parsed first if it is possible, therefore you can pass arrays
 
 ## Installation
 
-`npm i ms-conf -S`
-`yarn add ms-conf`
+`npm i ms-conf` or any other manager
 
 ## Configuration
 
@@ -38,8 +37,14 @@ NCONF_FILE_PATH=["/etc/app-configs","/etc/nice-config.js","/opt/app/bundle.json"
 ```
 
 ```js
-const confidence = require('ms-conf');
-const config = confidence.get('/');
+// ESM
+import { Store } from 'ms-conf';
+// CJS
+const { Store } = require('ms-conf');
+
+// get basic configuration
+const store = new Store()
+const config = store.get('/');
 // config would equal
 // {
 //   amqp: {
@@ -48,15 +53,18 @@ const config = confidence.get('/');
 //     stringTrue: 'true'
 //   }
 // }
+
+store.get('/amqp') // will return inner object and so on
+store.get('/amqp/hosts') // ['127.0.0.1']
 ```
 
 ## Hot Reload
 
 ```js
-confidence.enableReload();
+store.enableReload();
 // send SIGUSR1 or SIGUSR2 signal to process to reload configuration
 
-confidence.disableReload();
+store.disableReload();
 // wont listen for SIGUSR1 or SIGUSR2 events any longer
 ```
 
@@ -65,34 +73,49 @@ confidence.disableReload();
 1. Load file path
 
 ```js
-const { globFiles } = require('ms-conf/lib/load-config');
-const config = globFiles(['/path/to/configs', '/path/to/config/direct.js', '/path/to/conf.json']);
+// CJS
+const { globFiles } = require('ms-conf');
+// ESM
+import { globFiles } from 'ms-conf';
+
+// generates config for the passed files bypassing public API
+const config = globFiles(
+  undefined, // prependFile: string | undefined,
+  ['/path/to/configs', '/path/to/config/direct.js', '/path/to/conf.json'], // fileList: string | string[]
+  {}, // config: baseConfig
+  true, // throw error in case of file processing issues
+);
 ```
 
 2. setDefaultOpts
 
 ```js
-const { setDefaultOpts } = require('ms-conf');
+// define default options
+const store = new Store({ defaultOpts: { env: process.env.NODE_ENV } })
 
-setDefaultOpts({ env: process.env.NODE_ENV });
+// change default opts in runtime
+store.opts.defaultOpts = { env: process.env.NODE_ENV }
 ```
 
 3. prependDefaultConfiguration
 
-```js
-const { prependDefaultConfiguration } = require('ms-conf');
+Pass absolute filepath, which would be prepended. Useful to pass a directory with bundled default config
 
-prependDefaultConfiguration(filePath);
+```js
+store.prependDefaultConfiguration(filePath);
 ```
 
 4. crash when configuration files can't be loaded
 
-```js
-const conf = require('ms-conf');
+in 8+ behavior changes and malformed configuration files are not ignored anymore.
+To disable this set crashOnError option to false`
 
-conf.crashOnError = true;
+```js
+const { Store } = require('ms-conf');
+
+const store = new Store({ crashOnError: false })
 conf.prependDefaultConfiguration(['/path/to/config.json']);
-conf.get('/path') // would trigger crash - useful during initial load
+conf.get('/path') // wont throw errors on malformed files, but will write into stderr notifying of the error
 ```
 
 For a more detailed example - see tests
