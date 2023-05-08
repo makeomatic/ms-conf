@@ -1,15 +1,25 @@
 {
   "branches": ["master"],
-  "analyzeCommits": {
-    "preset": "angular",
-    "releaseRules": [
-      { "type": "docs", "release": "patch" },
-      { "type": "refactor", "release": "patch" },
-      { "type": "style", "release": "patch" },
-      { "type": "minor", "release": "minor" },
-      { "type": "patch", "release": "patch" },
-      { "type": "major", "release": "major" },
-      { "type": "breaking", "release": "major" }
-    ]
-  }
+  "plugins": [
+    ["@semantic-release/commit-analyzer", {
+      "preset": "angular",
+      "releaseRules": [
+        { "type": "docs", "release": "patch" },
+        { "type": "refactor", "release": "patch" },
+        { "type": "style", "release": "patch" },
+        { "type": "minor", "release": "minor" },
+        { "type": "patch", "release": "patch" },
+        { "type": "major", "release": "major" },
+        { "type": "breaking", "release": "major" }
+      ]
+    }],
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    "@semantic-release/npm",
+    "@semantic-release/github",
+    ["@semantic-release/git", {
+      "assets": ["CHANGELOG.md", "package.json"],
+      "message": "chore(release): ${nextRelease.version} [skip ci]"
+    }]
+  ]
 }

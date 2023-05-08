@@ -40,6 +40,9 @@
   "homepage": "https://github.com/makeomatic/ms-conf#readme",
   "devDependencies": {
     "@makeomatic/deploy": "^12.10.1",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^8.0.7",
     "@swc-node/register": "^1.6.5",
     "@types/debug": "^4.1.5",
     "@types/glob": "^8.1.0",
@@ -57,6 +60,7 @@
     "eslint-plugin-mocha": "^10.1.0",
     "gen-esm-wrapper": "^1.1.3",
     "mocha": "^10.2.0",
+    "semantic-release": "^21.0.2",
     "sinon": "^15.0.4",
     "typescript": "^5.0.4"
   },
