@@ -3,7 +3,7 @@ import _debug from 'debug'
 import camelCase from 'camelcase'
 import nconf from 'nconf'
 import dotenv from 'dotenv'
-import merge from 'lodash.mergewith'
+import mergeFactory from '@fastify/deepmerge'
 import fs from 'node:fs'
 import { sync } from 'glob'
 import path from 'path'
@@ -15,6 +15,11 @@ const { isArray } = Array
 const { env } = process
 const verbose = hasOwnProperty.call(env, 'DOTENV_NOT_SILENT') === false
 const cwd = process.cwd()
+const merge = mergeFactory({
+  mergeArray: () => (_, source) => {
+    return source
+  }
+})
 
 // safe json parse
 function parseJSONSafe(possibleJSON: string): unknown {
@@ -48,20 +53,8 @@ const camelCaseKeys = (camelize: boolean) => function processKeys(obj: Record<st
   return obj
 }
 
-/**
- * @param _ overwrite value, not used
- * @param srcValue
- */
-const customizer = (_: any, srcValue: unknown | unknown[]): unknown | unknown[] | undefined => {
-  if (Array.isArray(srcValue)) {
-    return srcValue
-  }
-
-  return undefined
-}
-
 // read file from path and try to parse it
-const readFileFactory = (configuration: any, crashOnError: boolean) => (absPath: string) => {
+const readFileFactory = (crashOnError: boolean) => (configuration: Record<string, unknown>, absPath: string): Record<string, unknown> => {
   assert(path.isAbsolute(absPath), `${absPath} must be an absolute path`)
 
   try {
@@ -69,12 +62,13 @@ const readFileFactory = (configuration: any, crashOnError: boolean) => (absPath:
     delete require.cache[absPath]
     debug('loading %s', absPath)
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    merge(configuration, require(absPath), customizer)
+    return merge(configuration, require(absPath))
   } catch (err: any) {
     if (crashOnError) {
       throw err
     } else {
       process.stderr.write(`Failed to include file ${absPath}, err: ${err.message}\n`)
+      return configuration
     }
   }
 }
@@ -122,9 +116,9 @@ function resolveAbsPaths(paths: string[]): string[] {
 export function globFiles(
   prependFile: string | undefined,
   filePaths: string | string[] | undefined = [],
-  configuration: any = {},
+  configuration: Record<string, unknown> = Object.create(null),
   crashOnError = true
-): void {
+): Record<string, unknown> {
   // if we get parsed JSON array - use it right away
   const files = isArray(filePaths)
     ? filePaths
@@ -135,15 +129,17 @@ export function globFiles(
   }
 
   // prepare merger
-  const mergeFile = readFileFactory(configuration, crashOnError)
+  const mergeFile = readFileFactory(crashOnError)
 
   // resolve paths and merge
-  resolveAbsPaths(files).forEach(mergeFile)
+  for (const file of resolveAbsPaths(files)) {
+    configuration = mergeFile(configuration, file)
+  }
 
   return configuration
 }
 
-export function loadConfiguration(crashOnError: boolean, prependFile?: string, appendConfiguration?: any): void {
+export function loadConfiguration(crashOnError: boolean, prependFile?: string, appendConfiguration?: any): Record<string, unknown> {
   // load dotenv
   const dotenvConfig = {
     verbose,
@@ -184,7 +180,7 @@ export function loadConfiguration(crashOnError: boolean, prependFile?: string, a
     normalizer(configFromEnv, value, key)
   }
 
-  const config = Object.create(null)
+  let config = Object.create(null)
   if (filePaths || prependFile) {
     // nconf file does not merge configuration, it will either omit it
     // or overwrite it, since it's JSON and is already parsed, what we will
@@ -192,14 +188,21 @@ export function loadConfiguration(crashOnError: boolean, prependFile?: string, a
     //
     // nconf.file(env.NCONF_FILE_PATH);
 
-    globFiles(prependFile, filePaths, config, crashOnError)
+    debug('globbing files', prependFile, filePaths)
+    config = globFiles(prependFile, filePaths, config, crashOnError)
+    debug('result\n%j', config)
   }
 
-  merge(config, configFromEnv)
+  debug('merging env\n%j', configFromEnv)
+  config = merge(config, configFromEnv)
+  debug('result\n%j', config)
 
   if (appendConfiguration !== undefined) {
-    merge(config, appendConfiguration, customizer)
+    debug('appending config: %j', appendConfiguration)
+    config = merge(config, appendConfiguration)
+    debug('result: %j', config)
   }
 
+  debug('prepared config\n%j', config)
   return config
 }
