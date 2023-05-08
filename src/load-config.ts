@@ -3,7 +3,6 @@ import _debug from 'debug'
 import camelCase from 'camelcase'
 import nconf from 'nconf'
 import dotenv from 'dotenv'
-import reduce from 'lodash.reduce'
 import merge from 'lodash.mergewith'
 import fs from 'node:fs'
 import { sync } from 'glob'
@@ -178,9 +177,14 @@ export function loadConfiguration(crashOnError: boolean, prependFile?: string, a
 
   // pull camelCase data
   const namespace = nconf.get(namespaceKey)
-  const configFromEnv = reduce(namespace, camelCaseKeys(camelize), {})
-  const config = Object.create(null)
+  assert(typeof namespace === 'object' && namespace !== null && !Array.isArray(namespace), 'namespace must be a js object')
+  const configFromEnv = Object.create(null)
+  const normalizer = camelCaseKeys(camelize)
+  for (const [key, value] of Object.entries(namespace)) {
+    normalizer(configFromEnv, value, key)
+  }
 
+  const config = Object.create(null)
   if (filePaths || prependFile) {
     // nconf file does not merge configuration, it will either omit it
     // or overwrite it, since it's JSON and is already parsed, what we will
