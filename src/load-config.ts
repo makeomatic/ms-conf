@@ -173,11 +173,15 @@ export function loadConfiguration(crashOnError: boolean, prependFile?: string, a
 
   // pull camelCase data
   const namespace = nconf.get(namespaceKey)
-  assert(typeof namespace === 'object' && namespace !== null && !Array.isArray(namespace), 'namespace must be a js object')
   const configFromEnv = Object.create(null)
-  const normalizer = camelCaseKeys(camelize)
-  for (const [key, value] of Object.entries(namespace)) {
-    normalizer(configFromEnv, value, key)
+
+  // if there is anything for recording
+  if (namespace) {
+    assert(typeof namespace === 'object' && namespace !== null && !Array.isArray(namespace), 'namespace must be a js object')
+    const normalizer = camelCaseKeys(camelize)
+    for (const [key, value] of Object.entries(namespace)) {
+      normalizer(configFromEnv, value, key)
+    }
   }
 
   let config = Object.create(null)
