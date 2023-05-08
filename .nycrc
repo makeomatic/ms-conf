@@ -1,8 +1,0 @@
-{
-  "all": true,
-  "reporter": [
-    "lcov",
-    "json",
-    "text-summary"
-  ]
-}

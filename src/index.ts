@@ -1,69 +1,87 @@
-import EventEmitter = require('eventemitter3');
-import _debug = require('debug');
-import type { Criteria } from '@makeomatic/confidence' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { Store } from '@makeomatic/confidence'
-import { strict as assert } from 'assert'
-import { loadConfiguration, append, prependDefaultConfiguration } from './load-config'
+import { EventEmitter } from 'eventemitter3'
+import _debug from 'debug'
+import type { Criteria } from '@makeomatic/confidence'
+import { Store as BaseStore } from '@makeomatic/confidence'
+import { strict as assert } from 'node:assert'
+import { loadConfiguration } from './load-config'
 
 const debug = _debug('ms-conf')
 
-// uses confidence API to access store
-let store: Store
-let defaultOpts: Criteria = {}
-let crashOnError = false
-const EE = new EventEmitter()
-
-export { append, prependDefaultConfiguration, EE }
-
-// use this on sighup
-export function reload(): void {
-  debug('reloading configuration')
-  store = new Store(loadConfiguration(crashOnError))
-  EE.emit('reload', store)
+export interface StoreConfig {
+  crashOnError: boolean
+  defaultOpts: Criteria
 }
 
-// hot-reload enabler
-export function enableReload(): void {
-  debug('enabling sigusr')
-  process.on('SIGUSR1', reload)
-  process.on('SIGUSR2', reload)
-}
+export class Store extends EventEmitter {
+  public readonly opts: Criteria
 
-// hot-reload disabler
-export function disableReload(): void {
-  debug('disabling sigusr')
-  process.removeListener('SIGUSR1', reload)
-  process.removeListener('SIGUSR2', reload)
-}
+  private store!: BaseStore
+  private _prepend: string | undefined
+  private _append: unknown
 
-export function get<Response>(key: string, opts: Criteria = defaultOpts): Response | undefined {
-  if (!store) reload()
-  return store.get<Response>(key, opts)
-}
+  constructor({ crashOnError = true, defaultOpts = {} }: Partial<StoreConfig> = {}) {
+    super()
+    this.opts = {
+      crashOnError,
+      defaultOpts
+    }
+    this.reload = this.reload.bind(this)
+  }
 
-export function meta<Response>(key: string, opts: Criteria = defaultOpts): Response | undefined {
-  if (!store) reload()
-  return store.meta(key, opts)
-}
+  /**
+   * Add base configuration
+   */
+  prependDefaultConfiguration(baseConfig: unknown): void {
+    assert(baseConfig, 'must be a path to specific location')
+    assert(typeof baseConfig === 'string')
+    this._prepend = baseConfig
+  }
 
-export function setDefaultOpts(opts: Criteria): void {
-  assert.ok(opts, 'must be an object')
-  assert.ok(typeof opts === 'object', 'must be an object')
-  defaultOpts = opts
-}
+  /**
+   * Appends passed configuration to resolved config
+   */
+  append(configuration: unknown): void {
+    this._append = configuration
+  }
 
-export function onReload(fn: EventEmitter.ListenerFn): void {
-  EE.on('reload', fn)
-}
+  /**
+   * Triggers reload from the disk
+   */
+  reload(): void {
+    debug('reloading configuration')
+    this.store = new BaseStore(loadConfiguration(
+      this.opts.crashOnError,
+      this._prepend,
+      this._append
+    ))
+    this.emit('reload')
+  }
 
-export function offReload(fn: EventEmitter.ListenerFn): void {
-  EE.off('reload', fn)
-}
+  enableReload(): void {
+    debug('enabling sigusr')
+    process.on('SIGUSR1', this.reload)
+    process.on('SIGUSR2', this.reload)
+  }
 
-export function setCrashOnError(val: boolean): void {
-  crashOnError = val
-}
+  disableReload(): void {
+    debug('disabling sigusr')
+    process.removeListener('SIGUSR1', this.reload)
+    process.removeListener('SIGUSR2', this.reload)
+  }
 
-export function getCrashOnError(): boolean {
-  return crashOnError
+  get<Response>(key: string, opts: Criteria = this.opts.defaultOpts): Response | undefined {
+    if (!this.store) {
+      this.reload()
+    }
+
+    return this.store.get<Response>(key, opts)
+  }
+
+  meta<Response>(key: string, opts: Criteria = this.opts.defaultOpts): Response | undefined {
+    if (!this.store) {
+      this.reload()
+    }
+
+    return this.store.meta(key, opts)
+  }
 }
