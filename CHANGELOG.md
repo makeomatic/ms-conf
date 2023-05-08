@@ -1,3 +1,10 @@
+## [8.0.2](https://github.com/makeomatic/ms-conf/compare/v8.0.1...v8.0.2) (2023-05-08)
+
+
+### Bug Fixes
+
+* allow empty namespace when env is nothing ([8f39ca9](https://github.com/makeomatic/ms-conf/commit/8f39ca9a815e278b47accdbf9532e49e93b44aab))
+
 ## [8.0.1](https://github.com/makeomatic/ms-conf/compare/v8.0.0...v8.0.1) (2023-05-08)
 
 
