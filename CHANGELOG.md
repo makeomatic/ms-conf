@@ -1,3 +1,10 @@
+## [8.0.1](https://github.com/makeomatic/ms-conf/compare/v8.0.0...v8.0.1) (2023-05-08)
+
+
+### Bug Fixes
+
+* include relevant examples in readme ([610ecae](https://github.com/makeomatic/ms-conf/commit/610ecae557c3059cdaf3f7aa1bcea5db96e7dbbc))
+
 # [8.0.0](https://github.com/makeomatic/ms-conf/compare/v7.0.2...v8.0.0) (2023-05-08)
 
 
