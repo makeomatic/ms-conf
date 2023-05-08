@@ -1,0 +1,19 @@
+# [8.0.0](https://github.com/makeomatic/ms-conf/compare/v7.0.2...v8.0.0) (2023-05-08)
+
+
+### Bug Fixes
+
+* dont use lodash.reduce ([1c73157](https://github.com/makeomatic/ms-conf/commit/1c73157a8956f2ebad65c17d871baf640b7dcc25))
+* replace lodash.mergewith ([15a91ba](https://github.com/makeomatic/ms-conf/commit/15a91ba754f1440d4377d21ae68ec6096c3e57e4))
+
+
+### Features
+
+* hybrid module, remove singleton, update API ([b58fbf4](https://github.com/makeomatic/ms-conf/commit/b58fbf47a6966e68391fbbf8d6ef50658417d1de))
+
+
+### BREAKING CHANGES
+
+* provides support for both cjs and esm imports.
+API has changed and instead exports `Store` class, which you should instantiate and configure.
+That class provides similar methods inside to what was previosly available at top level
