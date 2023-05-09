@@ -1,3 +1,10 @@
+# [8.1.0](https://github.com/makeomatic/ms-conf/compare/v8.0.2...v8.1.0) (2023-05-09)
+
+
+### Features
+
+* reload is now async, support ESM config files ([7e0f264](https://github.com/makeomatic/ms-conf/commit/7e0f264162c28d56d7685a3002be592f2dbc0031))
+
 ## [8.0.2](https://github.com/makeomatic/ms-conf/compare/v8.0.1...v8.0.2) (2023-05-08)
 
 
