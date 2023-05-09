@@ -1,3 +1,6 @@
 {
-  "extends": "makeomatic/typescript"
+  "extends": "makeomatic/typescript",
+  "parserOptions": {
+    "ecmaVersion": 2023
+  }
 }

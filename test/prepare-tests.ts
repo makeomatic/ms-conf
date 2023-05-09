@@ -1,7 +1,8 @@
-import { setTimeout } from 'node:timers/promises'
 import assert from 'node:assert'
+import { once } from 'node:events'
 import sinon from 'sinon'
 import type { Store } from 'ms-conf'
+import { setTimeout } from 'node:timers/promises'
 
 export const loadTests = (StoreCtor: typeof Store, baseDir: string) => {
   describe('Configuration loader', () => {
@@ -18,7 +19,10 @@ export const loadTests = (StoreCtor: typeof Store, baseDir: string) => {
 
     it('should load configuration', async () => {
       store = new StoreCtor({ crashOnError: false })
+      await store.ready()
       mod = store.get('/')
+      const debug = await import('debug').then(x => x.default('ms-conf'))
+      debug('mod loaded %j', mod)
     })
 
     it('should correctly use match env option', () => {
@@ -87,10 +91,11 @@ export const loadTests = (StoreCtor: typeof Store, baseDir: string) => {
         `${baseDir}/reload.json`,
       ])
 
-      process.kill(process.pid, 'SIGUSR2')
+      await Promise.all([
+        process.kill(process.pid, 'SIGUSR2'),
+        once(store, 'reload')
+      ])
 
-      // SIGHUP comes in as async action
-      await setTimeout(10)
       assert(store.get('/reloaded'))
     })
 
@@ -100,10 +105,12 @@ export const loadTests = (StoreCtor: typeof Store, baseDir: string) => {
       })
 
       assert.strictEqual(store.get('/boose'), undefined)
-      process.kill(process.pid, 'SIGUSR2')
 
-      // SIGHUP comes in as async action
-      await setTimeout(1)
+      await Promise.all([
+        process.kill(process.pid, 'SIGUSR2'),
+        once(store, 'reload')
+      ])
+
       assert.equal(store.get('/boose'), 'works')
     })
 
@@ -131,13 +138,13 @@ export const loadTests = (StoreCtor: typeof Store, baseDir: string) => {
       }
     })
 
-    it('crashes on error when reading files', () => {
+    it('crashes on error when reading files', async () => {
       env.NCONF_FILE_PATH = JSON.stringify([
         `${baseDir}/dir`,
       ])
 
       store.opts.crashOnError = true
-      assert.throws(() => store.reload(), 'must throw with malformed.json')
+      await assert.rejects(store.reload(), 'must throw with malformed.json')
     })
   })
 }

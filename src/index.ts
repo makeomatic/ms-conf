@@ -33,7 +33,7 @@ export class Store extends EventEmitter {
   /**
    * Add base configuration
    */
-  prependDefaultConfiguration(baseConfig: unknown): void {
+  public prependDefaultConfiguration(baseConfig: unknown): void {
     assert(baseConfig, 'must be a path to specific location')
     assert(typeof baseConfig === 'string')
     this._prepend = baseConfig
@@ -42,16 +42,16 @@ export class Store extends EventEmitter {
   /**
    * Appends passed configuration to resolved config
    */
-  append(configuration: unknown): void {
+  public append(configuration: unknown): void {
     this._append = configuration
   }
 
   /**
    * Triggers reload from the disk
    */
-  reload(): void {
+  async reload(): Promise<void> {
     debug('reloading configuration')
-    this.store = new BaseStore(loadConfiguration(
+    this.store = new BaseStore(await loadConfiguration(
       this.opts.crashOnError,
       this._prepend,
       this._append
@@ -59,31 +59,32 @@ export class Store extends EventEmitter {
     this.emit('reload')
   }
 
-  enableReload(): void {
+  /**
+   * alias for reload for now
+   */
+  async ready() {
+    await this.reload()
+  }
+
+  public enableReload(): void {
     debug('enabling sigusr')
     process.on('SIGUSR1', this.reload)
     process.on('SIGUSR2', this.reload)
   }
 
-  disableReload(): void {
+  public disableReload(): void {
     debug('disabling sigusr')
     process.removeListener('SIGUSR1', this.reload)
     process.removeListener('SIGUSR2', this.reload)
   }
 
-  get<Response>(key: string, opts: Criteria = this.opts.defaultOpts): Response | undefined {
-    if (!this.store) {
-      this.reload()
-    }
-
+  public get<Response>(key: string, opts: Criteria = this.opts.defaultOpts): Response | undefined {
+    assert(this.store, 'call await store.ready() before accessing config')
     return this.store.get<Response>(key, opts)
   }
 
-  meta<Response>(key: string, opts: Criteria = this.opts.defaultOpts): Response | undefined {
-    if (!this.store) {
-      this.reload()
-    }
-
+  public meta<Response>(key: string, opts: Criteria = this.opts.defaultOpts): Response | undefined {
+    assert(this.store, 'call await store.ready() before accessing config')
     return this.store.meta(key, opts)
   }
 }

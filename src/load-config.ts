@@ -4,8 +4,8 @@ import camelCase from 'camelcase'
 import nconf from 'nconf'
 import dotenv from 'dotenv'
 import mergeFactory from '@fastify/deepmerge'
-import fs from 'node:fs'
-import { sync } from 'glob'
+import fs from 'node:fs/promises'
+import { glob } from 'glob'
 import path from 'path'
 import parse from 'secure-json-parse'
 
@@ -54,21 +54,27 @@ const camelCaseKeys = (camelize: boolean) => function processKeys(obj: Record<st
 }
 
 // read file from path and try to parse it
-const readFileFactory = (crashOnError: boolean) => (configuration: Record<string, unknown>, absPath: string): Record<string, unknown> => {
-  assert(path.isAbsolute(absPath), `${absPath} must be an absolute path`)
+const mergeFileFactory = (crashOnError: boolean) => {
+  return async (configuration: Record<string, unknown>, absPath: string): Promise<Record<string, unknown>> => {
+    assert(path.isAbsolute(absPath), `${absPath} must be an absolute path`)
 
-  try {
-    // delete loaded file
-    delete require.cache[absPath]
-    debug('loading %s', absPath)
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return merge(configuration, require(absPath))
-  } catch (err: any) {
-    if (crashOnError) {
-      throw err
-    } else {
-      process.stderr.write(`Failed to include file ${absPath}, err: ${err.message}\n`)
-      return configuration
+    try {
+      debug('loading %s', absPath)
+
+      const data = absPath.endsWith('.json')
+        ? parse(await fs.readFile(absPath))
+        : await import(absPath).then(m => m.default || m)
+
+      debug('loaded', data)
+
+      return merge(configuration, data)
+    } catch (err: any) {
+      if (crashOnError) {
+        throw err
+      } else {
+        process.stderr.write(`Failed to include file ${absPath}, err: ${err.message}\n`)
+        return configuration
+      }
     }
   }
 }
@@ -88,37 +94,45 @@ export function possibleJSONStringToArray(filePaths: string): string[] {
   return files
 }
 
-function resolve(filePath: string): string {
-  return require.resolve(filePath)
-}
+async function resolveAbsPaths(paths: string[]): Promise<string[]> {
+  debug('resolving abs paths for %j', paths)
+  const absolutePaths = new Set<string>()
 
-function resolveAbsPaths(paths: string[]): string[] {
-  const absolutePaths = paths.reduce((resolvedPaths: string[], filePath) => {
-    const stats = fs.statSync(filePath)
+  for (const filePath of paths) {
+    debug('evaluating %s', filePath)
+    const stats = await fs.stat(filePath)
     if (stats.isFile()) {
-      resolvedPaths.push(resolve(filePath))
+      debug('isFile')
+      absolutePaths.add(require.resolve(filePath))
+      debug('file added', require.resolve(filePath))
     } else if (stats.isDirectory()) {
       // NOTE: can be improved
       // this is an extra call, but we dont care since it's a one-time op
-      const absPaths = sync(`${filePath}/*.{ts,js,cjs,json}`)
-        .map(resolve)
-        .filter((x) => x.endsWith('.d.ts') === false)
+      const absPaths = await glob(`${filePath}/*.{ts,cts,mts,js,cjs,mjs,json}`, {
+        absolute: true,
+        ignore: '/**/*.d.ts'
+      })
 
-      resolvedPaths.push(...absPaths)
+      debug('isDir - %s - %j', filePath, absPaths)
+      for (const path of absPaths) {
+        absolutePaths.add(path)
+      }
+    } else {
+      debug('ignoring %s', filePath)
     }
+  }
 
-    return resolvedPaths
-  }, [])
+  debug('prepared abs paths set - %j', Array.from(absolutePaths))
 
-  return Array.from(new Set(absolutePaths))
+  return Array.from(absolutePaths)
 }
 
-export function globFiles(
+export async function globFiles(
   prependFile: string | undefined,
   filePaths: string | string[] | undefined = [],
   configuration: Record<string, unknown> = Object.create(null),
   crashOnError = true
-): Record<string, unknown> {
+): Promise<Record<string, unknown>> {
   // if we get parsed JSON array - use it right away
   const files = isArray(filePaths)
     ? filePaths
@@ -129,17 +143,19 @@ export function globFiles(
   }
 
   // prepare merger
-  const mergeFile = readFileFactory(crashOnError)
+  const mergeFile = mergeFileFactory(crashOnError)
 
   // resolve paths and merge
-  for (const file of resolveAbsPaths(files)) {
-    configuration = mergeFile(configuration, file)
+  for (const file of await resolveAbsPaths(files)) {
+    debug('merging config for %s', file)
+    configuration = await mergeFile(configuration, file)
+    debug('merged - prepared %j', configuration)
   }
 
   return configuration
 }
 
-export function loadConfiguration(crashOnError: boolean, prependFile?: string, appendConfiguration?: any): Record<string, unknown> {
+export async function loadConfiguration(crashOnError: boolean, prependFile?: string, appendConfiguration?: any): Promise<Record<string, unknown>> {
   // load dotenv
   const dotenvConfig = {
     verbose,
@@ -176,6 +192,7 @@ export function loadConfiguration(crashOnError: boolean, prependFile?: string, a
   const configFromEnv = Object.create(null)
 
   // if there is anything for recording
+  debug('retrieved namespace', namespace)
   if (namespace) {
     assert(typeof namespace === 'object' && namespace !== null && !Array.isArray(namespace), 'namespace must be a js object')
     const normalizer = camelCaseKeys(camelize)
@@ -183,6 +200,7 @@ export function loadConfiguration(crashOnError: boolean, prependFile?: string, a
       normalizer(configFromEnv, value, key)
     }
   }
+  debug('normalized config - %j', configFromEnv)
 
   let config = Object.create(null)
   if (filePaths || prependFile) {
@@ -193,7 +211,7 @@ export function loadConfiguration(crashOnError: boolean, prependFile?: string, a
     // nconf.file(env.NCONF_FILE_PATH);
 
     debug('globbing files', prependFile, filePaths)
-    config = globFiles(prependFile, filePaths, config, crashOnError)
+    config = await globFiles(prependFile, filePaths, config, crashOnError)
     debug('result\n%j', config)
   }
 

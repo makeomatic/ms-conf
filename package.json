@@ -13,7 +13,7 @@
     "prepublishOnly": "rimraf ./lib; pnpm compile",
     "compile": "tsc -b tsconfig.cjs.json tsconfig.types.json && gen-esm-wrapper . ./lib/esm/.index.mjs",
     "test": "pnpm compile && pnpm lint && pnpm test:cjs && pnpm test:esm",
-    "test:cjs": "cross-env NODE_ENV=test c8 mocha -r @swc-node/register ./test/**.spec.ts",
+    "test:cjs": "cross-env NODE_ENV=test DEBUG=ms-conf c8 mocha -r @swc-node/register ./test/**.spec.ts",
     "test:esm": "cross-env SWC_NODE_PROJECT=\"./tsconfig.tests-esm.json\" NODE_OPTIONS=\"--loader=@swc-node/register/esm\" NODE_ENV=test c8 mocha ./test/**.spec.mts",
     "lint": "eslint --ext .ts,.js ./src ./test/**.spec.ts",
     "semantic-release": "semantic-release",
