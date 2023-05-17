@@ -1,3 +1,10 @@
+## [8.1.2](https://github.com/makeomatic/ms-conf/compare/v8.1.1...v8.1.2) (2023-05-17)
+
+
+### Bug Fixes
+
+* improve compatibility for .ts ([3b07fef](https://github.com/makeomatic/ms-conf/commit/3b07fef097044526412dc0d1839bfe6d02559247))
+
 ## [8.1.1](https://github.com/makeomatic/ms-conf/compare/v8.1.0...v8.1.1) (2023-05-17)
 
 
