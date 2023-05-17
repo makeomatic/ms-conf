@@ -9,6 +9,7 @@
     "default": "./lib/esm/.index.mjs"
   },
   "main": "./lib/cjs/index.js",
+  "types": "./lib/types/index.d.ts",
   "scripts": {
     "prepublishOnly": "rimraf ./lib; pnpm compile",
     "compile": "tsc -b tsconfig.cjs.json tsconfig.types.json && gen-esm-wrapper . ./lib/esm/.index.mjs",
