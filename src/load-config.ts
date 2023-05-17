@@ -53,6 +53,14 @@ const camelCaseKeys = (camelize: boolean) => function processKeys(obj: Record<st
   return obj
 }
 
+const importOrRequire = async (absPath: string) => {
+  try {
+    return await import(absPath)
+  } catch (err) {
+    return require(absPath)
+  }
+}
+
 // read file from path and try to parse it
 const mergeFileFactory = (crashOnError: boolean) => {
   return async (configuration: Record<string, unknown>, absPath: string): Promise<Record<string, unknown>> => {
@@ -63,7 +71,7 @@ const mergeFileFactory = (crashOnError: boolean) => {
 
       const data = absPath.endsWith('.json')
         ? parse(await fs.readFile(absPath))
-        : await import(absPath).then(m => m.default || m)
+        : await importOrRequire(absPath).then(m => m.default || m)
 
       debug('loaded', data)
 
