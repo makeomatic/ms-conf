@@ -1,3 +1,10 @@
+## [8.1.1](https://github.com/makeomatic/ms-conf/compare/v8.1.0...v8.1.1) (2023-05-17)
+
+
+### Bug Fixes
+
+* fallback types ([6b8a93e](https://github.com/makeomatic/ms-conf/commit/6b8a93e4ea195b60d19a41ba3bb7b986356ee979))
+
 # [8.1.0](https://github.com/makeomatic/ms-conf/compare/v8.0.2...v8.1.0) (2023-05-09)
 
 
