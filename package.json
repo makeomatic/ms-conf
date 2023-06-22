@@ -74,6 +74,7 @@
     "eventemitter3": "^5.0.1",
     "glob": "^10.2.2",
     "nconf": "^0.12.0",
-    "secure-json-parse": "^2.7.0"
+    "secure-json-parse": "^2.7.0",
+    "synchronous-worker": "^1.0.5"
   }
 }

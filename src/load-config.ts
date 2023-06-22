@@ -55,23 +55,28 @@ const camelCaseKeys = (camelize: boolean) => function processKeys(obj: Record<st
 
 const importOrRequire = async (absPath: string) => {
   try {
-    return await import(absPath)
-  } catch (err) {
     return require(absPath)
+  } catch (err) {
+    return import(absPath)
   }
 }
 
 // read file from path and try to parse it
-const mergeFileFactory = (crashOnError: boolean) => {
+const mergeFileFactory = (crashOnError: boolean, allowDynamicImport: boolean) => {
   return async (configuration: Record<string, unknown>, absPath: string): Promise<Record<string, unknown>> => {
     assert(path.isAbsolute(absPath), `${absPath} must be an absolute path`)
 
     try {
       debug('loading %s', absPath)
 
-      const data = absPath.endsWith('.json')
-        ? parse(await fs.readFile(absPath))
-        : await importOrRequire(absPath).then(m => m.default || m)
+      let data
+      if (absPath.endsWith('.json')) {
+        data = parse(await fs.readFile(absPath))
+      } else if (allowDynamicImport) {
+        data = await importOrRequire(absPath).then(m => m.default || m)
+      } else {
+        data = require(absPath)
+      }
 
       debug('loaded', data)
 
@@ -139,7 +144,8 @@ export async function globFiles(
   prependFile: string | undefined,
   filePaths: string | string[] | undefined = [],
   configuration: Record<string, unknown> = Object.create(null),
-  crashOnError = true
+  crashOnError = true,
+  allowDynamicImport = true
 ): Promise<Record<string, unknown>> {
   // if we get parsed JSON array - use it right away
   const files = isArray(filePaths)
@@ -151,7 +157,7 @@ export async function globFiles(
   }
 
   // prepare merger
-  const mergeFile = mergeFileFactory(crashOnError)
+  const mergeFile = mergeFileFactory(crashOnError, allowDynamicImport)
 
   // resolve paths and merge
   for (const file of await resolveAbsPaths(files)) {
@@ -163,7 +169,19 @@ export async function globFiles(
   return configuration
 }
 
-export async function loadConfiguration(crashOnError: boolean, prependFile?: string, appendConfiguration?: any): Promise<Record<string, unknown>> {
+export type ConfigurationOpts = {
+  crashOnError: boolean,
+  prependFile?: string,
+  appendConfiguration?: Record<any, any>
+  allowDynamicImport?: boolean
+}
+
+export async function loadConfiguration({
+  crashOnError,
+  prependFile,
+  appendConfiguration,
+  allowDynamicImport
+}: ConfigurationOpts): Promise<Record<string, unknown>> {
   // load dotenv
   const dotenvConfig = {
     verbose,
@@ -219,7 +237,7 @@ export async function loadConfiguration(crashOnError: boolean, prependFile?: str
     // nconf.file(env.NCONF_FILE_PATH);
 
     debug('globbing files', prependFile, filePaths)
-    config = await globFiles(prependFile, filePaths, config, crashOnError)
+    config = await globFiles(prependFile, filePaths, config, crashOnError, allowDynamicImport)
     debug('result\n%j', config)
   }
 

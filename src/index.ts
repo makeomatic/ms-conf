@@ -1,5 +1,6 @@
 import { EventEmitter } from 'eventemitter3'
 import _debug from 'debug'
+import SynchronousWorker from 'synchronous-worker'
 import type { Criteria } from '@makeomatic/confidence'
 import { Store as BaseStore } from '@makeomatic/confidence'
 import { strict as assert } from 'node:assert'
@@ -19,7 +20,7 @@ export class Store extends EventEmitter {
 
   private store!: BaseStore
   private _prepend: string | undefined
-  private _append: unknown
+  private _append: Record<any, any> | undefined
 
   constructor({ crashOnError = true, defaultOpts = {} }: Partial<StoreConfig> = {}) {
     super()
@@ -42,28 +43,42 @@ export class Store extends EventEmitter {
   /**
    * Appends passed configuration to resolved config
    */
-  public append(configuration: unknown): void {
+  public append(configuration: Record<any, any>): void {
     this._append = configuration
   }
 
   /**
    * Triggers reload from the disk
    */
-  async reload(): Promise<void> {
+  public async reload(): Promise<void> {
     debug('reloading configuration')
-    this.store = new BaseStore(await loadConfiguration(
-      this.opts.crashOnError,
-      this._prepend,
-      this._append
-    ))
+    this.store = new BaseStore(await loadConfiguration({
+      crashOnError: this.opts.crashOnError,
+      prependFile: this._prepend,
+      appendConfiguration: this._append,
+      allowDynamicImport: true,
+    }))
     this.emit('reload')
   }
 
   /**
    * alias for reload for now
    */
-  async ready() {
+  public async ready() {
     await this.reload()
+  }
+
+  public sync() {
+    const w = new SynchronousWorker()
+    const load = w.createRequire(__filename)('./load-config').loadConfiguration
+    const storeData = w.runLoopUntilPromiseResolved(load({
+      crashOnError: this.opts.crashOnError,
+      prependFile: this._prepend,
+      appendConfiguration: this._append,
+      allowDynamicImport: false, // as it will crash the process
+    }))
+    this.store = new BaseStore(storeData)
+    this.emit('reload')
   }
 
   public enableReload(): void {

@@ -25,6 +25,14 @@ export const loadTests = (StoreCtor: typeof Store, baseDir: string) => {
       debug('mod loaded %j', mod)
     })
 
+    it('should load configuration using sync mode', async () => {
+      store = new StoreCtor({ crashOnError: false })
+      store.sync()
+      mod = store.get('/')
+      const debug = await import('debug').then(x => x.default('ms-conf'))
+      debug('mod loaded %j', mod)
+    })
+
     it('should correctly use match env option', () => {
       assert.strictEqual(Object.keys(mod).length, 10)
       assert.ok(mod.amqp)
