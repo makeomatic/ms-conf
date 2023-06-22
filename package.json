@@ -1,6 +1,6 @@
 {
   "name": "ms-conf",
-  "version": "8.1.2",
+  "version": "8.2.0",
   "description": "wrapper over dotenv and nconf module for one line configuration loading",
   "exports": {
     "types": "./lib/types/index.d.ts",

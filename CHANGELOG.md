@@ -1,3 +1,10 @@
+# [8.2.0](https://github.com/makeomatic/ms-conf/compare/v8.1.2...v8.2.0) (2023-06-22)
+
+
+### Features
+
+* .sync() ready method ([8c071c9](https://github.com/makeomatic/ms-conf/commit/8c071c934975d7093e43e510e0c21e127f1df81c))
+
 ## [8.1.2](https://github.com/makeomatic/ms-conf/compare/v8.1.1...v8.1.2) (2023-05-17)
 
 
