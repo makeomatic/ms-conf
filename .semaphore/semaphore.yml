@@ -21,8 +21,8 @@ global_job_config:
       - npm i -g pnpm@8
       - checkout
       - cache restore node-$(checksum pnpm-lock.yaml)
-      - pnpm i --frozen-lockfile --prefer-offline --ignore-scripts
-      - cache store node-$(checksum pnpm-lock.yaml) ~/.pnpm-store
+      - pnpm i --frozen-lockfile --prefer-offline
+      - cache store node-$(checksum pnpm-lock.yaml) $(pnpm store path)
 
 blocks:
   - name: test
