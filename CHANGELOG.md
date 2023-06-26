@@ -1,3 +1,10 @@
+## [8.2.1](https://github.com/makeomatic/ms-conf/compare/v8.2.0...v8.2.1) (2023-06-26)
+
+
+### Bug Fixes
+
+* sync worker optional ([074d7d6](https://github.com/makeomatic/ms-conf/commit/074d7d695a09c586392f99a99c54dd8070afbefb))
+
 # [8.2.0](https://github.com/makeomatic/ms-conf/compare/v8.1.2...v8.2.0) (2023-06-22)
 
 
