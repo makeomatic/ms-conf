@@ -1,6 +1,5 @@
 import { EventEmitter } from 'eventemitter3'
 import _debug from 'debug'
-import SynchronousWorker from 'synchronous-worker'
 import type { Criteria } from '@makeomatic/confidence'
 import { Store as BaseStore } from '@makeomatic/confidence'
 import { strict as assert } from 'node:assert'
@@ -69,6 +68,11 @@ export class Store extends EventEmitter {
   }
 
   public sync() {
+    // NOTE: this is an optional module and is only required for this method to work
+    // we require it here to avoid breaking apps that don't rely on this method
+    // as this is a native dependency
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const SynchronousWorker = require('synchronous-worker')
     const w = new SynchronousWorker()
     const load = w.createRequire(__filename)('./load-config').loadConfiguration
     const storeData = w.runLoopUntilPromiseResolved(load({
